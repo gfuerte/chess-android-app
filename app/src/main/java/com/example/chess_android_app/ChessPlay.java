@@ -10,6 +10,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.Toast;
+
+import com.example.chess_android_app.models.ChessGame;
 
 public class ChessPlay extends AppCompatActivity {
 
@@ -30,6 +33,8 @@ public class ChessPlay extends AppCompatActivity {
             a1, b1, c1, d1, e1, f1, g1, h1;
 
     private View viewHolder = null;
+
+    private ChessGame game = new ChessGame();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -335,92 +340,111 @@ public class ChessPlay extends AppCompatActivity {
         h1.setOnClickListener(tileClickListener);
     }
 
-    View.OnClickListener pieceClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            //Toast.makeText(MainActivity.this, "Clicked", Toast.LENGTH_SHORT).show();
-            if(viewHolder == null) {
-                viewHolder = v;
-            } else {
-                View view = viewHolder;
-                FrameLayout currentFrame = (FrameLayout) view.getParent();
-                currentFrame.removeView(view);
+    View.OnClickListener pieceClickListener = view -> {
+        if(viewHolder == null) {
+            viewHolder = view;
+        } else {
+            View v = viewHolder;
+            String origin = v.getTag().toString();
+            String destination = view.getTag().toString();
+            int result = game.play(origin + " " + destination);
 
-                FrameLayout newFrame = (FrameLayout) v.getParent();
-                if(newFrame.getChildCount() == 1) {
-                    newFrame.addView(view);
-                } else if(newFrame.getChildCount() == 2) {
-                    newFrame.removeViewAt(1);
-                    newFrame.addView(view);
+            if(result >= 0) {
+                //Toast.makeText(ChessPlay.this, origin + " " + destination, Toast.LENGTH_SHORT).show();
+
+                FrameLayout currentFrame = (FrameLayout) v.getParent();
+                currentFrame.removeView(v);
+
+                FrameLayout newFrame = (FrameLayout) view.getParent();
+                newFrame.removeViewAt(1);
+                newFrame.addView(v);
+
+                v.setTag(destination);
+
+                if(result == 1 || result == 2) {
+                    Toast.makeText(ChessPlay.this, "Check", Toast.LENGTH_SHORT).show();
                 }
-                viewHolder = null;
             }
+            viewHolder = null;
         }
     };
 
-    View.OnClickListener tileClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            if(viewHolder != null) {
-                View view = viewHolder;
-                FrameLayout currentFrame = (FrameLayout) view.getParent();
-                currentFrame.removeView(view);
+    View.OnClickListener tileClickListener = view -> {
+        if(viewHolder != null) {
+            View v = viewHolder;
+            String origin = v.getTag().toString();
+            String destination = view.getTag().toString();
+            int result = game.play(origin + " " + destination);
 
-                FrameLayout newFrame = (FrameLayout) v;
-                if(newFrame.getChildCount() == 1) {
-                    newFrame.addView(view);
-                } else if(newFrame.getChildCount() == 2) {
-                    newFrame.removeViewAt(1);
-                    newFrame.addView(view);
+            if(result >= 0) {
+                //Toast.makeText(ChessPlay.this, origin + " " + destination, Toast.LENGTH_SHORT).show();
+
+                FrameLayout currentFrame = (FrameLayout) v.getParent();
+                currentFrame.removeView(v);
+
+                FrameLayout newFrame = (FrameLayout) view;
+                newFrame.addView(v);
+
+                v.setTag(destination);
+
+                if(result == 1 || result == 2) {
+                    Toast.makeText(ChessPlay.this, "Check", Toast.LENGTH_SHORT).show();
                 }
-                viewHolder = null;
             }
+            viewHolder = null;
         }
     };
 
-    View.OnLongClickListener longClickListener = new View.OnLongClickListener() {
-        @Override
-        public boolean onLongClick(View v) {
-            ClipData data = ClipData.newPlainText("","");
-            View.DragShadowBuilder myShadowBuilder = new View.DragShadowBuilder(v);
-            v.startDragAndDrop(data,myShadowBuilder, v, 0);
-            return false;
-        }
+    View.OnLongClickListener longClickListener = view -> {
+        ClipData data = ClipData.newPlainText("","");
+        View.DragShadowBuilder myShadowBuilder = new View.DragShadowBuilder(view);
+        view.startDragAndDrop(data,myShadowBuilder, view, 0);
+        return false;
     };
 
-    View.OnDragListener dragListener = new View.OnDragListener() {
-        @Override
-        public boolean onDrag(View v, DragEvent event) {
-            int dragEvent = event.getAction();
-            final View view = (View) event.getLocalState();
+    View.OnDragListener dragListener = (target, event) -> {
+        int dragEvent = event.getAction();
+        final View view = (View) event.getLocalState();
 
-            switch (dragEvent) {
-                case DragEvent.ACTION_DRAG_ENTERED:
-                case DragEvent.ACTION_DRAG_EXITED:
-                    break;
-                case DragEvent.ACTION_DROP:
+        switch (dragEvent) {
+            case DragEvent.ACTION_DRAG_ENTERED:
+            case DragEvent.ACTION_DRAG_EXITED:
+                break;
+            case DragEvent.ACTION_DROP:
+                String origin = view.getTag().toString();
+                String destination = target.getTag().toString();
+                int result = game.play(origin + " " + destination);
+
+                if(result >= 0) {
+                    //Toast.makeText(ChessPlay.this, origin + " " + destination, Toast.LENGTH_SHORT).show();
+
                     FrameLayout currentFrame = (FrameLayout) view.getParent();
                     currentFrame.removeView(view);
 
-                    FrameLayout newFrame = (FrameLayout) v;
-                    if(newFrame.getChildCount() == 1) {
+                    FrameLayout newFrame = (FrameLayout) target;
+                    if (newFrame.getChildCount() == 1) {
                         newFrame.addView(view);
-                    } else if(newFrame.getChildCount() == 2) {
+                    } else if (newFrame.getChildCount() == 2) {
                         newFrame.removeViewAt(1);
                         newFrame.addView(view);
                     }
-                    break;
-            }
-            return true;
+                    view.setTag(destination);
+
+                    if(result == 1 || result == 2) {
+                        Toast.makeText(ChessPlay.this, "Check", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                break;
         }
+        return true;
     };
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                finish();
-                return true;
+        if (item.getItemId() == android.R.id.home) {
+            finish();
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }

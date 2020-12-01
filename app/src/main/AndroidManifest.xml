@@ -15,7 +15,7 @@
         <activity
             android:name=".ChessPlay"
             android:label="@string/app_name" />
-        <activity android:name=".Chess">
+        <activity android:name=".ChessMain">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

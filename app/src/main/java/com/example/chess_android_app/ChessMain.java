@@ -4,12 +4,10 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.Toast;
 
-public class Chess extends AppCompatActivity {
+public class ChessMain extends AppCompatActivity {
 
     private Button newGame, replayGame;
 
@@ -24,14 +22,14 @@ public class Chess extends AppCompatActivity {
         newGame.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(Chess.this, ChessPlay.class));
+                startActivity(new Intent(ChessMain.this, ChessPlay.class));
             }
         });
 
         replayGame.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(Chess.this, ChessReplay.class));
+                startActivity(new Intent(ChessMain.this, ChessReplay.class));
             }
         });
     }
