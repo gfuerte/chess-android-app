@@ -3,4 +3,8 @@
     <string name="new_game">New Game</string>
     <string name="replay_game">Replay Game</string>
     <string name="desc"></string>
+    <string name="undo">Undo</string>
+    <string name="ai">AI</string>
+    <string name="draw">Draw</string>
+    <string name="resign">Resign</string>
 </resources>

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -9,8 +8,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-
-        android:padding="10dp"
+        android:paddingTop="50dp"
+        android:paddingBottom="30dp"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
         android:orientation="vertical">
 
         <LinearLayout
@@ -31,7 +32,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/light_tile"></ImageView>
+                    android:src="@drawable/light_tile"/>
 
                 <ImageView
                     android:id="@+id/bR_left"
@@ -42,7 +43,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/black_rook" />
+                    android:src="@drawable/black_rook"/>
             </FrameLayout>
 
             <FrameLayout
@@ -58,7 +59,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/dark_tile"></ImageView>
+                    android:src="@drawable/dark_tile"/>
 
                 <ImageView
                     android:id="@+id/bN_left"
@@ -69,7 +70,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/black_knight" />
+                    android:src="@drawable/black_knight"/>
             </FrameLayout>
 
             <FrameLayout
@@ -85,7 +86,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/light_tile"></ImageView>
+                    android:src="@drawable/light_tile"/>
 
                 <ImageView
                     android:id="@+id/bB_left"
@@ -96,7 +97,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/black_bishop" />
+                    android:src="@drawable/black_bishop"/>
             </FrameLayout>
 
             <FrameLayout
@@ -112,7 +113,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/dark_tile"></ImageView>
+                    android:src="@drawable/dark_tile"/>
 
                 <ImageView
                     android:id="@+id/bQ"
@@ -123,7 +124,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/black_queen" />
+                    android:src="@drawable/black_queen"/>
             </FrameLayout>
 
             <FrameLayout
@@ -139,7 +140,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/light_tile"></ImageView>
+                    android:src="@drawable/light_tile"/>
 
                 <ImageView
                     android:id="@+id/bK"
@@ -150,7 +151,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/black_king" />
+                    android:src="@drawable/black_king"/>
             </FrameLayout>
 
             <FrameLayout
@@ -166,7 +167,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/dark_tile"></ImageView>
+                    android:src="@drawable/dark_tile"/>
 
                 <ImageView
                     android:id="@+id/bB_right"
@@ -177,7 +178,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/black_bishop" />
+                    android:src="@drawable/black_bishop"/>
             </FrameLayout>
 
             <FrameLayout
@@ -193,7 +194,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/light_tile"></ImageView>
+                    android:src="@drawable/light_tile"/>
 
                 <ImageView
                     android:id="@+id/bN_right"
@@ -204,7 +205,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/black_knight" />
+                    android:src="@drawable/black_knight"/>
             </FrameLayout>
 
             <FrameLayout
@@ -220,7 +221,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/dark_tile"></ImageView>
+                    android:src="@drawable/dark_tile"/>
 
                 <ImageView
                     android:id="@+id/bR_right"
@@ -231,7 +232,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/black_rook" />
+                    android:src="@drawable/black_rook"/>
             </FrameLayout>
         </LinearLayout>
 
@@ -253,7 +254,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/dark_tile"></ImageView>
+                    android:src="@drawable/dark_tile"/>
 
                 <ImageView
                     android:id="@+id/bp1"
@@ -264,7 +265,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/black_pawn" />
+                    android:src="@drawable/black_pawn"/>
             </FrameLayout>
 
             <FrameLayout
@@ -280,7 +281,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/light_tile"></ImageView>
+                    android:src="@drawable/light_tile"/>
 
                 <ImageView
                     android:id="@+id/bp2"
@@ -291,7 +292,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/black_pawn" />
+                    android:src="@drawable/black_pawn"/>
             </FrameLayout>
 
             <FrameLayout
@@ -307,7 +308,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/dark_tile"></ImageView>
+                    android:src="@drawable/dark_tile"/>
 
                 <ImageView
                     android:id="@+id/bp3"
@@ -318,7 +319,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/black_pawn" />
+                    android:src="@drawable/black_pawn"/>
             </FrameLayout>
 
             <FrameLayout
@@ -334,7 +335,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/light_tile"></ImageView>
+                    android:src="@drawable/light_tile"/>
 
                 <ImageView
                     android:id="@+id/bp4"
@@ -345,7 +346,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/black_pawn" />
+                    android:src="@drawable/black_pawn"/>
             </FrameLayout>
 
             <FrameLayout
@@ -361,7 +362,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/dark_tile"></ImageView>
+                    android:src="@drawable/dark_tile"/>
 
                 <ImageView
                     android:id="@+id/bp5"
@@ -372,7 +373,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/black_pawn" />
+                    android:src="@drawable/black_pawn"/>
             </FrameLayout>
 
             <FrameLayout
@@ -388,7 +389,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/light_tile"></ImageView>
+                    android:src="@drawable/light_tile"/>
 
                 <ImageView
                     android:id="@+id/bp6"
@@ -399,7 +400,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/black_pawn" />
+                    android:src="@drawable/black_pawn"/>
             </FrameLayout>
 
             <FrameLayout
@@ -415,7 +416,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/dark_tile"></ImageView>
+                    android:src="@drawable/dark_tile"/>
 
                 <ImageView
                     android:id="@+id/bp7"
@@ -426,7 +427,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/black_pawn" />
+                    android:src="@drawable/black_pawn"/>
             </FrameLayout>
 
             <FrameLayout
@@ -442,7 +443,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/light_tile"></ImageView>
+                    android:src="@drawable/light_tile"/>
 
                 <ImageView
                     android:id="@+id/bp8"
@@ -453,7 +454,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/black_pawn" />
+                    android:src="@drawable/black_pawn"/>
             </FrameLayout>
         </LinearLayout>
 
@@ -475,7 +476,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/light_tile"></ImageView>
+                    android:src="@drawable/light_tile"/>
             </FrameLayout>
 
             <FrameLayout
@@ -491,7 +492,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/dark_tile"></ImageView>
+                    android:src="@drawable/dark_tile"/>
             </FrameLayout>
 
             <FrameLayout
@@ -507,7 +508,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/light_tile"></ImageView>
+                    android:src="@drawable/light_tile"/>
             </FrameLayout>
 
             <FrameLayout
@@ -523,7 +524,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/dark_tile"></ImageView>
+                    android:src="@drawable/dark_tile"/>
             </FrameLayout>
 
             <FrameLayout
@@ -539,7 +540,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/light_tile"></ImageView>
+                    android:src="@drawable/light_tile"/>
             </FrameLayout>
 
             <FrameLayout
@@ -555,7 +556,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/dark_tile"></ImageView>
+                    android:src="@drawable/dark_tile"/>
             </FrameLayout>
 
             <FrameLayout
@@ -571,7 +572,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/light_tile"></ImageView>
+                    android:src="@drawable/light_tile"/>
             </FrameLayout>
 
             <FrameLayout
@@ -587,7 +588,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/dark_tile"></ImageView>
+                    android:src="@drawable/dark_tile"/>
             </FrameLayout>
         </LinearLayout>
 
@@ -609,7 +610,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/dark_tile"></ImageView>
+                    android:src="@drawable/dark_tile"/>
             </FrameLayout>
 
             <FrameLayout
@@ -625,7 +626,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/light_tile"></ImageView>
+                    android:src="@drawable/light_tile"/>
             </FrameLayout>
 
             <FrameLayout
@@ -641,7 +642,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/dark_tile"></ImageView>
+                    android:src="@drawable/dark_tile"/>
             </FrameLayout>
 
             <FrameLayout
@@ -657,7 +658,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/light_tile"></ImageView>
+                    android:src="@drawable/light_tile"/>
             </FrameLayout>
 
             <FrameLayout
@@ -673,7 +674,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/dark_tile"></ImageView>
+                    android:src="@drawable/dark_tile"/>
             </FrameLayout>
 
             <FrameLayout
@@ -689,7 +690,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/light_tile"></ImageView>
+                    android:src="@drawable/light_tile"/>
             </FrameLayout>
 
             <FrameLayout
@@ -705,7 +706,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/dark_tile"></ImageView>
+                    android:src="@drawable/dark_tile"/>
             </FrameLayout>
 
             <FrameLayout
@@ -721,7 +722,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/light_tile"></ImageView>
+                    android:src="@drawable/light_tile"/>
             </FrameLayout>
         </LinearLayout>
 
@@ -743,7 +744,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/light_tile"></ImageView>
+                    android:src="@drawable/light_tile"/>
             </FrameLayout>
 
             <FrameLayout
@@ -759,7 +760,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/dark_tile"></ImageView>
+                    android:src="@drawable/dark_tile"/>
             </FrameLayout>
 
             <FrameLayout
@@ -775,7 +776,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/light_tile"></ImageView>
+                    android:src="@drawable/light_tile"/>
             </FrameLayout>
 
             <FrameLayout
@@ -791,7 +792,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/dark_tile"></ImageView>
+                    android:src="@drawable/dark_tile"/>
             </FrameLayout>
 
             <FrameLayout
@@ -807,7 +808,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/light_tile"></ImageView>
+                    android:src="@drawable/light_tile"/>
             </FrameLayout>
 
             <FrameLayout
@@ -823,7 +824,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/dark_tile"></ImageView>
+                    android:src="@drawable/dark_tile"/>
             </FrameLayout>
 
             <FrameLayout
@@ -839,7 +840,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/light_tile"></ImageView>
+                    android:src="@drawable/light_tile"/>
             </FrameLayout>
 
             <FrameLayout
@@ -855,7 +856,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/dark_tile"></ImageView>
+                    android:src="@drawable/dark_tile"/>
             </FrameLayout>
         </LinearLayout>
 
@@ -877,7 +878,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/dark_tile"></ImageView>
+                    android:src="@drawable/dark_tile"/>
             </FrameLayout>
 
             <FrameLayout
@@ -893,7 +894,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/light_tile"></ImageView>
+                    android:src="@drawable/light_tile"/>
             </FrameLayout>
 
             <FrameLayout
@@ -909,7 +910,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/dark_tile"></ImageView>
+                    android:src="@drawable/dark_tile"/>
             </FrameLayout>
 
             <FrameLayout
@@ -925,7 +926,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/light_tile"></ImageView>
+                    android:src="@drawable/light_tile"/>
             </FrameLayout>
 
             <FrameLayout
@@ -941,7 +942,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/dark_tile"></ImageView>
+                    android:src="@drawable/dark_tile"/>
             </FrameLayout>
 
             <FrameLayout
@@ -957,7 +958,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/light_tile"></ImageView>
+                    android:src="@drawable/light_tile"/>
             </FrameLayout>
 
             <FrameLayout
@@ -973,7 +974,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/dark_tile"></ImageView>
+                    android:src="@drawable/dark_tile"/>
             </FrameLayout>
 
             <FrameLayout
@@ -989,7 +990,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/light_tile"></ImageView>
+                    android:src="@drawable/light_tile"/>
             </FrameLayout>
         </LinearLayout>
 
@@ -1011,7 +1012,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/light_tile"></ImageView>
+                    android:src="@drawable/light_tile"/>
 
                 <ImageView
                     android:id="@+id/wp1"
@@ -1022,7 +1023,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/white_pawn" />
+                    android:src="@drawable/white_pawn"/>
             </FrameLayout>
 
             <FrameLayout
@@ -1038,7 +1039,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/dark_tile"></ImageView>
+                    android:src="@drawable/dark_tile"/>
 
                 <ImageView
                     android:id="@+id/wp2"
@@ -1049,7 +1050,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/white_pawn" />
+                    android:src="@drawable/white_pawn"/>
             </FrameLayout>
 
             <FrameLayout
@@ -1065,7 +1066,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/light_tile"></ImageView>
+                    android:src="@drawable/light_tile"/>
 
                 <ImageView
                     android:id="@+id/wp3"
@@ -1076,7 +1077,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/white_pawn" />
+                    android:src="@drawable/white_pawn"/>
             </FrameLayout>
 
             <FrameLayout
@@ -1092,7 +1093,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/dark_tile"></ImageView>
+                    android:src="@drawable/dark_tile"/>
 
                 <ImageView
                     android:id="@+id/wp4"
@@ -1103,7 +1104,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/white_pawn" />
+                    android:src="@drawable/white_pawn"/>
             </FrameLayout>
 
             <FrameLayout
@@ -1119,7 +1120,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/light_tile"></ImageView>
+                    android:src="@drawable/light_tile"/>
 
                 <ImageView
                     android:id="@+id/wp5"
@@ -1130,7 +1131,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/white_pawn" />
+                    android:src="@drawable/white_pawn"/>
             </FrameLayout>
 
             <FrameLayout
@@ -1146,7 +1147,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/dark_tile"></ImageView>
+                    android:src="@drawable/dark_tile"/>
 
                 <ImageView
                     android:id="@+id/wp6"
@@ -1157,7 +1158,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/white_pawn" />
+                    android:src="@drawable/white_pawn"/>
             </FrameLayout>
 
             <FrameLayout
@@ -1173,7 +1174,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/light_tile"></ImageView>
+                    android:src="@drawable/light_tile"/>
 
                 <ImageView
                     android:id="@+id/wp7"
@@ -1184,7 +1185,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/white_pawn" />
+                    android:src="@drawable/white_pawn"/>
             </FrameLayout>
 
             <FrameLayout
@@ -1200,7 +1201,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/dark_tile"></ImageView>
+                    android:src="@drawable/dark_tile"/>
 
                 <ImageView
                     android:id="@+id/wp8"
@@ -1211,7 +1212,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/white_pawn" />
+                    android:src="@drawable/white_pawn"/>
             </FrameLayout>
         </LinearLayout>
 
@@ -1233,7 +1234,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/dark_tile"></ImageView>
+                    android:src="@drawable/dark_tile"/>
 
                 <ImageView
                     android:id="@+id/wR_left"
@@ -1244,7 +1245,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/white_rook" />
+                    android:src="@drawable/white_rook"/>
             </FrameLayout>
 
             <FrameLayout
@@ -1260,7 +1261,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/light_tile"></ImageView>
+                    android:src="@drawable/light_tile"/>
 
                 <ImageView
                     android:id="@+id/wN_left"
@@ -1271,7 +1272,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/white_knight" />
+                    android:src="@drawable/white_knight"/>
             </FrameLayout>
 
             <FrameLayout
@@ -1287,7 +1288,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/dark_tile"></ImageView>
+                    android:src="@drawable/dark_tile"/>
 
                 <ImageView
                     android:id="@+id/wB_left"
@@ -1298,7 +1299,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/white_bishop" />
+                    android:src="@drawable/white_bishop"/>
             </FrameLayout>
 
             <FrameLayout
@@ -1314,7 +1315,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/light_tile"></ImageView>
+                    android:src="@drawable/light_tile"/>
 
                 <ImageView
                     android:id="@+id/wQ"
@@ -1325,7 +1326,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/white_queen" />
+                    android:src="@drawable/white_queen"/>
             </FrameLayout>
 
             <FrameLayout
@@ -1341,7 +1342,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/dark_tile"></ImageView>
+                    android:src="@drawable/dark_tile"/>
 
                 <ImageView
                     android:id="@+id/wK"
@@ -1352,7 +1353,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/white_king" />
+                    android:src="@drawable/white_king"/>
             </FrameLayout>
 
             <FrameLayout
@@ -1368,7 +1369,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/light_tile"></ImageView>
+                    android:src="@drawable/light_tile"/>
 
                 <ImageView
                     android:id="@+id/wB_right"
@@ -1379,7 +1380,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/white_bishop" />
+                    android:src="@drawable/white_bishop"/>
             </FrameLayout>
 
             <FrameLayout
@@ -1395,7 +1396,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/dark_tile"></ImageView>
+                    android:src="@drawable/dark_tile"/>
 
                 <ImageView
                     android:id="@+id/wN_right"
@@ -1406,7 +1407,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/white_knight" />
+                    android:src="@drawable/white_knight"/>
             </FrameLayout>
 
             <FrameLayout
@@ -1422,7 +1423,7 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/light_tile"></ImageView>
+                    android:src="@drawable/light_tile"/>
 
                 <ImageView
                     android:id="@+id/wR_right"
@@ -1433,14 +1434,66 @@
                     android:contentDescription="@string/desc"
                     android:maxWidth="42dp"
                     android:maxHeight="42dp"
-                    android:src="@drawable/white_rook" />
+                    android:src="@drawable/white_rook"/>
             </FrameLayout>
         </LinearLayout>
     </LinearLayout>
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"></LinearLayout>
+        android:layout_height="match_parent">
+
+        <TextView
+            android:id="@+id/text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="false"
+            android:gravity="center"
+            android:text="" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_alignParentBottom="true">
+
+            <Button
+                android:id="@+id/undo_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:drawableLeft="@drawable/undo_icon"
+                android:text="@string/undo"
+                android:textSize="10sp"/>
+
+            <Button
+                android:id="@+id/ai_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:drawableLeft="@drawable/ai_icon"
+                android:text="@string/ai"
+                android:textSize="10sp"/>
+
+            <Button
+                android:id="@+id/draw_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawableLeft="@drawable/draw_icon"
+                android:layout_weight="1"
+                android:text="@string/draw"
+                android:textSize="10sp"/>
+
+            <Button
+                android:id="@+id/resign_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawableLeft="@drawable/resign_icon"
+                android:layout_weight="1"
+                android:text="@string/resign"
+                android:textSize="10sp"/>
+        </LinearLayout>
+    </RelativeLayout>
+
 
 </LinearLayout>
