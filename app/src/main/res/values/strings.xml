@@ -7,4 +7,8 @@
     <string name="ai">AI</string>
     <string name="draw">Draw</string>
     <string name="resign">Resign</string>
+    <string name="game_over">Game Over</string>
+    <string name="save_game">Save Game</string>
+    <string name="exit">Exit</string>
+    <string name="enter_title">Enter Game Title</string>
 </resources>

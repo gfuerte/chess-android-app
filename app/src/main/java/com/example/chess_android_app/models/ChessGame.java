@@ -1,5 +1,9 @@
 package com.example.chess_android_app.models;
 
+import android.util.Pair;
+
+import java.util.ArrayList;
+
 public class ChessGame {
     private Tile[][] board;
 
@@ -12,7 +16,16 @@ public class ChessGame {
     private boolean whitesMove;
     private boolean drawCheck;
 
-    private String previousMethod;
+    private String prevMethod;
+    private String prevprevMethod;
+
+    private ArrayList<Tile> undoPieces;
+    private ArrayList<int[]> undoLocations;
+    private boolean undoFirst;
+
+    private int[] promotionLocation;
+
+    private ArrayList<String> moveHistory;
 
     public ChessGame() {
         this.board = new Tile[8][8];
@@ -22,335 +35,691 @@ public class ChessGame {
         this.bKing = new int[]{0, 4};
         this.whiteCheck = 0;
         this.blackCheck = 0;
-        this.previousMethod = "";
 
         this.whitesMove = true;
         this.drawCheck = false;
+
+        this.prevMethod = "";
+        this.prevprevMethod = "";
+
+        this.undoPieces = new ArrayList<>();
+        this.undoLocations = new ArrayList<>();
+        this.undoFirst = false;
+
+        this.promotionLocation = new int[2];
+
+        this.moveHistory = new ArrayList<>();
     }
 
     public int play(String input) {
         /*
+        -2: Undo
         -1: Input Error
         0: Normal Turn
-        1: Check on White King
-        2: Check on Black King
-        3: Checkmate on White King
-        4: Checkmate on Black King
+        1: En passant on white pawn
+        2: En passant on black pawn
+        3: White Pawn Promotion
+        4: Black Pawn Promotion
+        5: wK Castle Right Side
+        6: wK Castle Left Side
+        7: bK Castle Right Side
+        8: bK Castle Left Side
+        9: Check on White King
+        10: Check on Black King
+        11: Checkmate on White King
+        12: Checkmate on Black King
          */
-        int[] origin = getIndex(input.substring(0, 2));
-        int[] destination = getIndex(input.substring(3, 5));
-        if (validateMove(origin, destination, input, whitesMove)) {
+
+        if (input.length() == 2) {
+            Tile piece = null;
+            String boardName = input.charAt(0) + "" + input.charAt(1);
+            switch (input.charAt(1)) {
+                case 'B':
+                    piece = new Bishop(boardName);
+                    break;
+                case 'N':
+                    piece = new Knight(boardName);
+                    break;
+                case 'Q':
+                    piece = new Queen(boardName);
+                    break;
+                case 'R':
+                    piece = new Rook(boardName);
+                    break;
+            }
+            piece.setFirstMove(false);
+            board[promotionLocation[0]][promotionLocation[1]] = piece;
+
+            String history = moveHistory.get(moveHistory.size()-1) + " " + input.charAt(1);
+            moveHistory.remove(moveHistory.size()-1);
+            moveHistory.add(history);
+
             check();
             if (whitesMove && blackCheck >= 1) {
                 if (checkmate("black")) {
-                    System.out.println("Checkmate\n");
-                    System.out.println("White wins");
-                    return 4;
+                    //System.out.println("Checkmate\n");
+                    //System.out.println("White wins");
+                    return 12;
                 }
-                previousMethod = input.substring(0, 5);
-                whitesMove = ((whitesMove) ? false : true);
-                return 2;
+                whitesMove = (!whitesMove);
+                return 10;
             } else if (!whitesMove && whiteCheck >= 1) {
                 if (checkmate("white")) {
-                    System.out.println("Checkmate\n");
-                    System.out.println("Black wins");
-                    return 3;
+                    //System.out.println("Checkmate\n");
+                    //System.out.println("Black wins");
+                    return 11;
                 }
-                previousMethod = input.substring(0, 5);
-                whitesMove = ((whitesMove) ? false : true);
-                return 1;
+                whitesMove = (!whitesMove);
+                return 9;
             }
-            previousMethod = input.substring(0, 5);
-            whitesMove = ((whitesMove) ? false : true);
-        } else {
-            return -1;
-        }
-        return 0;
-    }
+            whitesMove = (!whitesMove);
+            return 0;
+        } else if (input.equals("undo")) {
+            if (undoPieces.size() > 0) {
+                Tile piece = undoPieces.get(0);
+                Tile target = undoPieces.get(1);
 
+                int[] undoOrigin = undoLocations.get(0);
+                int[] undoDestination = undoLocations.get(1);
+
+                if (undoLocations.size() == 2) {
+                    board[undoOrigin[0]][undoOrigin[1]] = piece;
+                    board[undoDestination[0]][undoDestination[1]] = target;
+
+                    if (undoFirst) {
+                        piece.setFirstMove(true);
+                        undoFirst = false;
+                    }
+
+                    undoPieces.clear();
+                    undoLocations.clear();
+                } else if (undoLocations.size() == 3) {
+                    Tile enpass = undoPieces.get(2);
+                    int[] enLocation = undoLocations.get(2);
+
+                    board[undoOrigin[0]][undoOrigin[1]] = piece;
+                    board[undoDestination[0]][undoDestination[1]] = target;
+                    board[enLocation[0]][enLocation[1]] = enpass;
+
+                    prevMethod = prevprevMethod;
+
+                    undoPieces.clear();
+                    undoLocations.clear();
+                } else if (undoLocations.size() == 4) {
+                    Tile rook = undoPieces.get(2);
+                    Tile empty = undoPieces.get(3);
+                    int[] rookLocation = undoLocations.get(2);
+                    int[] emptyLocation = undoLocations.get(3);
+
+                    board[undoOrigin[0]][undoOrigin[1]] = piece;
+                    board[undoDestination[0]][undoDestination[1]] = target;
+                    board[rookLocation[0]][rookLocation[1]] = rook;
+                    board[emptyLocation[0]][emptyLocation[1]] = empty;
+
+                    if (undoFirst) {
+                        piece.setFirstMove(true);
+                        rook.setFirstMove(true);
+                        undoFirst = false;
+                    }
+
+                    undoPieces.clear();
+                    undoLocations.clear();
+                }
+                whitesMove = (!whitesMove);
+                moveHistory.remove(moveHistory.size()-1);
+                return -2;
+            }
+            return -1;
+        } else {
+            int[] origin = getIndex(input.substring(0, 2));
+            int[] destination = getIndex(input.substring(3, 5));
+            int result = validateMove(origin, destination, input, whitesMove, true);
+            if (result >= 0) {
+                if (result == 3 || result == 4) return result;
+
+                check();
+                if (whitesMove && blackCheck >= 1) {
+                    if (checkmate("black")) {
+                        //System.out.println("Checkmate\n");
+                        //System.out.println("White wins");
+                        return 12;
+                    }
+                    prevMethod = input.substring(0, 5);
+                    whitesMove = (!whitesMove);
+                    return 10;
+                } else if (!whitesMove && whiteCheck >= 1) {
+                    if (checkmate("white")) {
+                        //System.out.println("Checkmate\n");
+                        //System.out.println("Black wins");
+                        return 11;
+                    }
+                    prevMethod = input.substring(0, 5);
+                    whitesMove = (!whitesMove);
+                    return 9;
+                }
+                prevprevMethod = prevMethod;
+                prevMethod = input.substring(0, 5);
+                whitesMove = (!whitesMove);
+                return result;
+            } else {
+                return -1;
+            }
+        }
+    }
 
     private boolean validPrevious(String prev) {
         String[] arr = {"a2 a4", "b2 b4", "c2 c4", "d2 d4", "e2 e4", "f2 f4", "g2 g4", "h2 h4", "a7 a5", "b7 b5",
                 "c7 c5", "d7 d5", "e7 e5", "f7 f5", "g7 g5", "h7 h5"};
 
-        for (int i = 0; i < arr.length; i++) {
-            if (prev.equals(arr[i])) {
+        for (String s : arr) {
+            if (prev.equals(s)) {
                 return true;
             }
         }
         return false;
     }
 
-    private boolean validateMove(int[] origin, int[] destination, String input, boolean whitesMove) {
-        if (destination[0] < 0 || destination[0] > 7 || destination[1] < 0 || destination[0] > 7) {
-            return false;
+    public int validateMove(int[] origin, int[] destination, String input, boolean whitesMove, boolean undo) {
+        /*
+        -1: Error
+        0: Normal Move
+        1: En passant on white pawn
+        2: En passant on black pawn
+        3: White Pawn Promotion
+        4: Black Pawn Promotion
+        5: wK Castle Right Side
+        6: wK Castle Left Side
+        7: bK Castle Right Side
+        8: bK Castle Left Side
+
+        */
+        if (destination[0] < 0 || destination[0] > 7 || destination[1] < 0 || destination[1] > 7) {
+            return -1;
         }
 
         Tile piece = board[origin[0]][origin[1]];
         Tile target = board[destination[0]][destination[1]];
         int[][] moves = piece.getMoves();
 
-        if (piece.getOccupation() == false) {
-            return false;
+        if (!piece.getOccupation()) {
+            return -1;
         }
 
-        if ((whitesMove == true && piece.getTeam().equals("black"))
-                || (whitesMove == false && piece.getTeam().equals("white"))) {
-            return false;
+        if ((whitesMove && piece.getTeam().equals("black"))
+                || (!whitesMove && piece.getTeam().equals("white"))) {
+            return -1;
         }
 
         if (piece.getTeam().equals(target.getTeam())) {
-            return false;
+            return -1;
         }
 
-        if (piece.getPieceName().equals("Pawn")) { // Pawn
-            boolean validMove = false;
-            if (piece.getTeam().equals("white")) {
-                int movesW[][] = {{-1, 0}};
-                int moves2W[][] = {{-2, 0}};
-                int attackW[][] = {{-1, 1}, {-1, -1}};
-                if (checkCollisions(origin, destination, moves2W) && piece.getFirstMove()) { // double move
-                    if (!target.getOccupation()) {
-                        validMove = true;
+        switch (piece.getPieceName()) {
+            case "Pawn":  // Pawn
+                boolean validMove = false;
+                if (piece.getTeam().equals("white")) {
+                    int[][] movesW = {{-1, 0}};
+                    int[][] moves2W = {{-2, 0}};
+                    int[][] attackW = {{-1, 1}, {-1, -1}};
+                    if (checkCollisions(origin, destination, moves2W) && piece.getFirstMove()) { // double move
+                        if (!target.getOccupation()) {
+                            validMove = true;
+                        }
+                    } else if (checkMove(origin, destination, movesW)) { // normal move
+                        if (!target.getOccupation()) {
+                            validMove = true;
+                        }
+                    } else if (checkMove(origin, destination, attackW)) { // attack move
+                        if (target.getOccupation()) {
+                            validMove = true;
+                        } else { // en passant
+                            if (validPrevious(prevMethod)) {
+                                int[] prevIndex = getIndex(prevMethod.substring(3, 5));
+                                if ((prevIndex[0] - destination[0] == 1) && (prevIndex[1] == destination[1])) {
+                                    Tile temp = board[prevIndex[0]][prevIndex[1]];
+                                    movePiece(origin, destination, piece, target);
+                                    board[prevIndex[0]][prevIndex[1]] = new Tile();
+                                    if (checksOwnKing(piece.getTeam())) {
+                                        reverseMove(origin, destination, temp, target);
+                                        board[prevIndex[0]][prevIndex[1]] = temp;
+                                        return -1;
+                                    } else {
+                                        if (piece.getFirstMove()) {
+                                            undoFirst = true;
+                                            piece.setFirstMove(false);
+                                        }
+
+                                        if (undo) {
+                                            undoPieces.clear();
+                                            undoLocations.clear();
+
+                                            undoPieces.add(piece);
+                                            undoPieces.add(target);
+                                            undoPieces.add(temp);
+
+                                            undoLocations.add(origin);
+                                            undoLocations.add(destination);
+                                            undoLocations.add(prevIndex);
+
+                                            moveHistory.add(input + " white enpass");
+                                        }
+                                        return 2;
+                                    }
+                                }
+                            }
+                        }
                     }
-                } else if (checkMove(origin, destination, movesW)) { // normal move
-                    if (!target.getOccupation()) {
-                        validMove = true;
-                    }
-                } else if (checkMove(origin, destination, attackW)) { // attack move
-                    if (target.getOccupation()) {
-                        validMove = true;
-                    } else { // en passant
-                        if (validPrevious(previousMethod)) {
-                            int[] prevIndex = getIndex(previousMethod.substring(3, 5));
-                            if ((prevIndex[0] - destination[0] == 1) && (prevIndex[1] == destination[1])) {
-                                Tile temp = board[prevIndex[0]][prevIndex[1]];
-                                movePiece(origin, destination, piece, target);
-                                board[prevIndex[0]][prevIndex[1]] = new Tile();
-                                if (checksOwnKing(piece.getTeam())) {
-                                    reverseMove(origin, destination, temp, target);
-                                    board[prevIndex[0]][prevIndex[1]] = temp;
-                                    return false;
-                                } else {
-                                    if (piece.getFirstMove())
-                                        piece.setFirstMove(false);
-                                    return true;
+                } else if (piece.getTeam().equals("black")) {
+                    int[][] movesB = {{1, 0}};
+                    int[][] moves2B = {{2, 0}};
+                    int[][] attackB = {{1, 1}, {1, -1}};
+
+                    if (checkCollisions(origin, destination, moves2B) && piece.getFirstMove()) { // double move
+                        if (!target.getOccupation()) {
+                            validMove = true;
+                        }
+                    } else if (checkMove(origin, destination, movesB)) { // normal move
+                        if (!target.getOccupation()) {
+                            validMove = true;
+                        }
+                    } else if (checkMove(origin, destination, attackB)) { // attack move
+                        if (target.getOccupation()) {
+                            validMove = true;
+                        } else { // en passant
+                            if (validPrevious(prevMethod)) {
+                                int[] prevIndex = getIndex(prevMethod.substring(3, 5));
+                                if ((destination[0] - prevIndex[0] == 1) && (destination[1] == prevIndex[1])) {
+                                    Tile temp = board[prevIndex[0]][prevIndex[1]];
+                                    movePiece(origin, destination, piece, target);
+                                    board[prevIndex[0]][prevIndex[1]] = new Tile();
+                                    if (checksOwnKing(piece.getTeam())) {
+                                        reverseMove(origin, destination, temp, target);
+                                        board[prevIndex[0]][prevIndex[1]] = temp;
+                                        return -1;
+                                    } else {
+                                        if (piece.getFirstMove()) {
+                                            undoFirst = true;
+                                            piece.setFirstMove(false);
+                                        }
+
+                                        if (undo) {
+                                            undoPieces.clear();
+                                            undoLocations.clear();
+
+                                            undoPieces.add(piece);
+                                            undoPieces.add(target);
+                                            undoPieces.add(temp);
+
+                                            undoLocations.add(origin);
+                                            undoLocations.add(destination);
+                                            undoLocations.add(prevIndex);
+
+                                            moveHistory.add(input + " black enpass");
+                                        }
+                                        return 1;
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            } else if (piece.getTeam().equals("black")) {
-                int movesB[][] = {{1, 0}};
-                int moves2B[][] = {{2, 0}};
-                int attackB[][] = {{1, 1}, {1, -1}};
 
-                if (checkCollisions(origin, destination, moves2B) && piece.getFirstMove()) { // double move
-                    if (!target.getOccupation()) {
-                        validMove = true;
-                    }
-                } else if (checkMove(origin, destination, movesB)) { // normal move
-                    if (!target.getOccupation()) {
-                        validMove = true;
-                    }
-                } else if (checkMove(origin, destination, attackB)) { // attack move
-                    if (target.getOccupation()) {
-                        validMove = true;
-                    } else { // en passant
-                        if (validPrevious(previousMethod)) {
-                            int[] prevIndex = getIndex(previousMethod.substring(3, 5));
-                            if ((destination[0] - prevIndex[0] == 1) && (destination[1] == prevIndex[1])) {
-                                Tile temp = board[prevIndex[0]][prevIndex[1]];
-                                movePiece(origin, destination, piece, target);
-                                board[prevIndex[0]][prevIndex[1]] = new Tile();
-                                if (checksOwnKing(piece.getTeam())) {
-                                    reverseMove(origin, destination, temp, target);
-                                    board[prevIndex[0]][prevIndex[1]] = temp;
-                                    return false;
-                                } else {
-                                    if (piece.getFirstMove())
-                                        piece.setFirstMove(false);
-                                    return true;
-                                }
-                            }
+                if (validMove) {
+                    if (destination[0] == 0 || destination[0] == 7) { // promotion
+                        movePiece(origin, destination, piece, target);
+                        if (checksOwnKing(piece.getTeam())) {
+                            reverseMove(origin, destination, piece, target);
+                            return -1;
                         }
-                    }
-                }
-            }
 
-            if (validMove) {
-                Tile temp = piece;
-                if (destination[0] == 0 || destination[0] == 7) { // promotion
-                    piece = (piece.getTeam().equals("white")) ? pawnPromotion(input, "white")
-                            : pawnPromotion(input, "black");
-                    movePiece(origin, destination, piece, target);
-                    if (checksOwnKing(piece.getTeam())) {
-                        reverseMove(origin, destination, temp, target);
-                        return false;
+                        if (piece.getFirstMove()) {
+                            undoFirst = true;
+                            piece.setFirstMove(false);
+                        }
+
+                        if (undo) {
+                            undoPieces.clear();
+                            undoLocations.clear();
+
+                            undoPieces.add(piece);
+                            undoPieces.add(target);
+
+                            undoLocations.add(origin);
+                            undoLocations.add(destination);
+
+                            moveHistory.add(input);
+                        }
+
+                        promotionLocation[0] = destination[0];
+                        promotionLocation[1] = destination[1];
+                        if (piece.getTeam().equals("white")) {
+                            return 3;
+                        } else {
+                            return 4;
+                        }
+                    } else {
+                        if (input.length() == 7 || input.length() == 13) return -1;
+                        movePiece(origin, destination, piece, target);
+                        if (checksOwnKing(piece.getTeam())) {
+                            reverseMove(origin, destination, piece, target);
+                            return -1;
+                        }
+
+                        if (piece.getFirstMove()) {
+                            undoFirst = true;
+                            piece.setFirstMove(false);
+                        }
+
+                        if (undo) {
+                            undoPieces.clear();
+                            undoLocations.clear();
+
+                            undoPieces.add(piece);
+                            undoPieces.add(target);
+
+                            undoLocations.add(origin);
+                            undoLocations.add(destination);
+
+                            moveHistory.add(input);
+                        }
+                        return 0;
                     }
                 } else {
-                    if (input.length() == 7 || input.length() == 13) return false;
+                    return -1;
+                }
+            case "Knight":
+                // Case: Knight jump over pieces, no need for collision check
+                if (checkMove(origin, destination, moves)) {
                     movePiece(origin, destination, piece, target);
                     if (checksOwnKing(piece.getTeam())) {
                         reverseMove(origin, destination, piece, target);
-                        return false;
+                        return -1;
+                    } else {
+                        if (piece.getFirstMove()) {
+                            undoFirst = true;
+                            piece.setFirstMove(false);
+                        }
                     }
-                }
-            } else {
-                return false;
-            }
-            if (piece.getFirstMove())
-                piece.setFirstMove(false);
-
-        } else if (piece.getPieceName().equals("Knight")) {
-            // Case: Knight jump over pieces, no need for collision check
-            if (checkMove(origin, destination, moves)) {
-                movePiece(origin, destination, piece, target);
-                if (checksOwnKing(piece.getTeam())) {
-                    reverseMove(origin, destination, piece, target);
-                    return false;
                 } else {
-                    piece.setFirstMove(false);
+                    return -1;
                 }
-            } else {
-                return false;
-            }
-        } else if (piece.getPieceName().equals("King")) { // King
-            if (piece.getTeam().equals("white") && validCastling()) {
-                // if its King is white and going to right side towards rook
-                if (destination[0] == 7 && destination[1] == 6) {
-                    check();
-                    if (whiteCheck > 0) return false;
+                break;
+            case "King":  // King
+                if (piece.getTeam().equals("white") && validCastling()) {
+                    // if its King is white and going to right side towards rook
+                    if (destination[0] == 7 && destination[1] == 6) {
+                        check();
+                        if (whiteCheck > 0) return -1;
 
-                    int[] temp = {7, 5};
-                    movePiece(origin, temp, piece, board[7][5]);
-                    check();
-                    if (whiteCheck > 0) {
-                        reverseMove(origin, temp, piece, board[7][4]);
-                        return false;
+                        int[] temp = {7, 5};
+                        movePiece(origin, temp, piece, board[7][5]);
+                        check();
+                        if (whiteCheck > 0) {
+                            reverseMove(origin, temp, piece, board[7][4]);
+                            return -1;
+                        }
+
+                        movePiece(origin, destination, piece, target);
+                        board[7][5] = board[7][7];
+                        board[7][7] = new Tile();
+
+                        check();
+                        if (whiteCheck > 0) {
+                            reverseCastle(destination, "white");
+                            return -1;
+                        }
+                        board[7][5].setFirstMove(false);
+
+                        if (piece.getFirstMove()) {
+                            undoFirst = true;
+                            piece.setFirstMove(false);
+                        }
+
+                        if (undo) {
+                            undoPieces.clear();
+                            undoLocations.clear();
+
+                            undoPieces.add(piece);
+                            undoPieces.add(target);
+                            undoPieces.add(board[7][5]);
+                            undoPieces.add(board[7][7]);
+
+                            undoLocations.add(origin);
+                            undoLocations.add(destination);
+
+                            int[] rookFormer = {7, 7};
+                            int[] rookCurrent = {7, 5};
+                            undoLocations.add(rookFormer);
+                            undoLocations.add(rookCurrent);
+                            moveHistory.add(input + " wK castle right");
+                        }
+                        return 5;
+                    } else if (destination[0] == 7 && destination[1] == 2) { // if king is white and going to left side
+                        check();
+                        if (whiteCheck > 0) return -1;
+
+                        int[] temp = {7, 3};
+                        movePiece(origin, temp, piece, board[7][3]);
+                        check();
+                        if (whiteCheck > 0) {
+                            reverseMove(origin, temp, piece, board[7][4]);
+                            return -1;
+                        }
+
+                        movePiece(origin, destination, piece, target);
+                        board[7][3] = board[7][0];
+                        board[7][0] = new Tile();
+
+                        check();
+                        if (whiteCheck > 0) {
+                            reverseCastle(destination, "white");
+                            return -1;
+                        }
+                        board[7][3].setFirstMove(false);
+
+                        if (piece.getFirstMove()) {
+                            undoFirst = true;
+                            piece.setFirstMove(false);
+                        }
+
+                        if (undo) {
+                            undoPieces.clear();
+                            undoLocations.clear();
+
+                            undoPieces.add(piece);
+                            undoPieces.add(target);
+                            undoPieces.add(board[7][3]);
+                            undoPieces.add(board[7][0]);
+
+                            undoLocations.add(origin);
+                            undoLocations.add(destination);
+
+                            int[] rookFormer = {7, 0};
+                            int[] rookCurrent = {7, 3};
+                            undoLocations.add(rookFormer);
+                            undoLocations.add(rookCurrent);
+                            moveHistory.add(input + " wK castle left");
+                        }
+                        return 6;
+                    } else {
+                        if (!checkMove(origin, destination, moves)) return -1;
+                        movePiece(origin, destination, piece, target);
+                        if (piece.getTeam().equals("white") && checksOwnKing("white")) {
+                            reverseMove(origin, destination, piece, target);
+                            return -1;
+                        }
+
+                        if (piece.getFirstMove()) {
+                            undoFirst = true;
+                            piece.setFirstMove(false);
+                        }
                     }
+                } else if (piece.getTeam().equals("black") && validCastling()) {
+                    // if its King is black and going to right side towards rook
+                    if (destination[0] == 0 && destination[1] == 6) {
+                        check();
+                        if (blackCheck > 0) return -1;
 
-                    movePiece(origin, destination, piece, target);
-                    board[7][5] = board[7][7];
-                    board[7][7] = new Tile();
+                        int[] temp = {0, 5};
+                        movePiece(origin, temp, piece, board[0][5]);
+                        check();
+                        if (blackCheck > 0) {
+                            reverseMove(origin, temp, piece, board[0][4]);
+                            return -1;
+                        }
 
-                    check();
-                    if (whiteCheck > 0) {
-                        reverseCastle(destination, "white");
-                        return false;
+                        movePiece(origin, destination, piece, target);
+                        board[0][5] = board[0][7];
+                        board[0][7] = new Tile();
+
+                        check();
+                        if (blackCheck > 0) {
+                            reverseCastle(destination, "black");
+                            return -1;
+                        }
+                        board[0][5].setFirstMove(false);
+
+                        if (piece.getFirstMove()) {
+                            undoFirst = true;
+                            piece.setFirstMove(false);
+                        }
+
+                        if (undo) {
+                            undoPieces.clear();
+                            undoLocations.clear();
+
+                            undoPieces.add(piece);
+                            undoPieces.add(target);
+                            undoPieces.add(board[0][5]);
+                            undoPieces.add(board[0][7]);
+
+                            undoLocations.add(origin);
+                            undoLocations.add(destination);
+
+                            int[] rookFormer = {0, 7};
+                            int[] rookCurrent = {0, 5};
+                            undoLocations.add(rookFormer);
+                            undoLocations.add(rookCurrent);
+                            moveHistory.add(input + " bK castle right");
+                        }
+                        return 7;
+                    } else if (destination[0] == 0 && destination[1] == 2) { // if king is black and going to left side
+                        check();
+                        if (blackCheck > 0) return -1;
+
+                        int[] temp = {0, 3};
+                        movePiece(origin, temp, piece, board[0][3]);
+                        check();
+                        if (blackCheck > 0) {
+                            reverseMove(origin, temp, piece, board[0][4]);
+                            return -1;
+                        }
+
+                        movePiece(origin, destination, piece, target);
+                        board[0][3] = board[0][0];
+                        board[0][0] = new Tile();
+
+                        check();
+                        if (blackCheck > 0) {
+                            reverseCastle(destination, "black");
+                            return -1;
+                        }
+                        board[0][3].setFirstMove(false);
+
+                        if (piece.getFirstMove()) {
+                            undoFirst = true;
+                            piece.setFirstMove(false);
+                        }
+
+                        if (undo) {
+                            undoPieces.clear();
+                            undoLocations.clear();
+
+                            undoPieces.add(piece);
+                            undoPieces.add(target);
+                            undoPieces.add(board[0][3]);
+                            undoPieces.add(board[0][0]);
+
+                            undoLocations.add(origin);
+                            undoLocations.add(destination);
+
+                            int[] rookFormer = {0, 0};
+                            int[] rookCurrent = {0, 3};
+                            undoLocations.add(rookFormer);
+                            undoLocations.add(rookCurrent);
+                            moveHistory.add(input + " bK castle left");
+                        }
+                        return 8;
+                    } else {
+                        if (!checkMove(origin, destination, moves)) return -1;
+                        movePiece(origin, destination, piece, target); // for now
+                        if (piece.getTeam().equals("black") && checksOwnKing("black")) {
+                            reverseMove(origin, destination, piece, target);
+                            return -1;
+                        }
+
+                        if (piece.getFirstMove()) {
+                            undoFirst = true;
+                            piece.setFirstMove(false);
+                        }
                     }
-                    board[7][5].setFirstMove(false);
-                } else if (destination[0] == 7 && destination[1] == 2) { // if king is white and going to left side
-                    check();
-                    if (whiteCheck > 0) return false;
-
-                    int[] temp = {7, 3};
-                    movePiece(origin, temp, piece, board[7][3]);
-                    check();
-                    if (whiteCheck > 0) {
-                        reverseMove(origin, temp, piece, board[7][4]);
-                        return false;
-                    }
-
-                    movePiece(origin, destination, piece, target);
-                    board[7][3] = board[7][0];
-                    board[7][0] = new Tile();
-
-                    check();
-                    if (whiteCheck > 0) {
-                        reverseCastle(destination, "white");
-                        return false;
-                    }
-                    board[7][3].setFirstMove(false);
-                } else {
-                    if (!checkMove(origin, destination, moves)) return false;
+                } else { // normal move
+                    if (!checkMove(origin, destination, moves)) return -1;
                     movePiece(origin, destination, piece, target);
                     if (piece.getTeam().equals("white") && checksOwnKing("white")) {
                         reverseMove(origin, destination, piece, target);
-                        return false;
-                    }
-                }
-            } else if (piece.getTeam().equals("black") && validCastling()) {
-                // if its King is black and going to right side towards rook
-                if (destination[0] == 0 && destination[1] == 6) {
-                    check();
-                    if (blackCheck > 0) return false;
-
-                    int[] temp = {0, 5};
-                    movePiece(origin, temp, piece, board[0][5]);
-                    check();
-                    if (blackCheck > 0) {
-                        reverseMove(origin, temp, piece, board[0][4]);
-                        return false;
-                    }
-
-                    movePiece(origin, destination, piece, target);
-                    board[0][5] = board[0][7];
-                    board[0][7] = new Tile();
-
-                    check();
-                    if (blackCheck > 0) {
-                        reverseCastle(destination, "black");
-                        return false;
-                    }
-                    board[0][5].setFirstMove(false);
-                } else if (destination[0] == 0 && destination[1] == 2) { // if king is black and going to left side
-                    check();
-                    if (blackCheck > 0) return false;
-
-                    int[] temp = {0, 3};
-                    movePiece(origin, temp, piece, board[0][3]);
-                    check();
-                    if (blackCheck > 0) {
-                        reverseMove(origin, temp, piece, board[0][4]);
-                        return false;
-                    }
-
-                    movePiece(origin, destination, piece, target);
-                    board[0][3] = board[0][0];
-                    board[0][0] = new Tile();
-
-                    check();
-                    if (blackCheck > 0) {
-                        reverseCastle(destination, "black");
-                        return false;
-                    }
-                    board[0][3].setFirstMove(false);
-                } else {
-                    if (!checkMove(origin, destination, moves)) return false;
-                    movePiece(origin, destination, piece, target); // for now
-                    if (piece.getTeam().equals("black") && checksOwnKing("black")) {
+                        return -1;
+                    } else if (piece.getTeam().equals("black") && checksOwnKing("black")) {
                         reverseMove(origin, destination, piece, target);
-                        return false;
+                        return -1;
                     }
                 }
-            } else { // normal move
-                if (!checkMove(origin, destination, moves)) return false;
-                movePiece(origin, destination, piece, target);
-                if (piece.getTeam().equals("white") && checksOwnKing("white")) {
-                    reverseMove(origin, destination, piece, target);
-                    return false;
-                } else if (piece.getTeam().equals("black") && checksOwnKing("black")) {
-                    reverseMove(origin, destination, piece, target);
-                    return false;
-                }
-            }
-            piece.setFirstMove(false);
 
-        } else { // Queen, Bishop, Rook no special rules to mind
-            if (checkCollisions(origin, destination, moves)) {
-                movePiece(origin, destination, piece, target);
-                if (checksOwnKing(piece.getTeam())) {
-                    reverseMove(origin, destination, piece, target);
-                    return false;
-                } else {
+                if (piece.getFirstMove()) {
+                    undoFirst = true;
                     piece.setFirstMove(false);
                 }
-            } else {
-                return false;
-            }
+                break;
+            default:  // Queen, Bishop, Rook no special rules to mind
+                if (checkCollisions(origin, destination, moves)) {
+                    movePiece(origin, destination, piece, target);
+                    if (checksOwnKing(piece.getTeam())) {
+                        reverseMove(origin, destination, piece, target);
+                        return -1;
+                    } else {
+                        if (piece.getFirstMove()) {
+                            undoFirst = true;
+                            piece.setFirstMove(false);
+                        }
+                    }
+                } else {
+                    return -1;
+                }
+                break;
         }
-        return true;
+
+        // secondary protection, this if-else statement should never be reached
+        if (piece.getTeam().equals("white") && whiteCheck >= 1) {
+            System.out.println("This should not be happening");
+            return -1;
+        } else if (piece.getTeam().equals("black") && blackCheck >= 1) {
+            System.out.println("This should not be happening");
+            return -1;
+        }
+
+        if (undo) {
+            undoPieces.clear();
+            undoLocations.clear();
+
+            undoPieces.add(piece);
+            undoPieces.add(target);
+
+            undoLocations.add(origin);
+            undoLocations.add(destination);
+
+            moveHistory.add(input);
+        }
+        return 0;
     }
 
     private boolean checkCollisions(int[] origin, int[] destination, int[][] moves) {
@@ -362,22 +731,22 @@ public class ChessGame {
             count++;
             try {
                 Tile temp = board[origin[0] + moves[i][0]][origin[1] + moves[i][1]];
-                if (temp.getOccupation() == true) { // collision has occurred
+                if (temp.getOccupation()) { // collision has occurred
                     i = i + 6 - count;
                     count = -1;
                 }
 
                 if (count == 6)
                     count = 0;
-            } catch (ArrayIndexOutOfBoundsException e) {
+            } catch (ArrayIndexOutOfBoundsException ignored) {
             }
         }
         return false;
     }
 
     private boolean checkMove(int[] origin, int[] destination, int[][] moves) {
-        for (int i = 0; i < moves.length; i++) {
-            if (origin[0] + moves[i][0] == destination[0] && origin[1] + moves[i][1] == destination[1]) {
+        for (int[] move : moves) {
+            if (origin[0] + move[0] == destination[0] && origin[1] + move[1] == destination[1]) {
                 return true;
             }
         }
@@ -451,31 +820,6 @@ public class ChessGame {
         }
     }
 
-    private Tile pawnPromotion(String input, String team) {
-        if (input.length() != 7 && input.length() != 13)
-            return new Queen(team.charAt(0) + "" + "Q");
-
-        Tile piece = null;
-        switch (input.charAt(6)) {
-            case 'B':
-                piece = new Bishop(team.charAt(0) + "" + input.charAt(6));
-                break;
-            case 'N':
-                piece = new Knight(team.charAt(0) + "" + input.charAt(6));
-                break;
-            case 'Q':
-                piece = new Queen(team.charAt(0) + "" + input.charAt(6));
-                break;
-            case 'R':
-                piece = new Rook(team.charAt(0) + "" + input.charAt(6));
-                break;
-            default:
-                piece = new Queen(team.charAt(0) + "" + input.charAt(6));
-        }
-        piece.setFirstMove(false);
-        return piece;
-    }
-
     private boolean validCastling() {
         if ((board[7][4].getPieceName().equals("King") && board[7][7].getPieceName().equals("Rook"))
                 && board[7][4].getTeam().equals(board[7][7].getTeam()) && board[7][4].getFirstMove()
@@ -496,15 +840,12 @@ public class ChessGame {
                 // check if tiles are empty
                 board[0][5].getPieceName().equals("") && board[0][6].getPieceName().equals("")) {
             return true;
-        } else if ((board[0][4].getPieceName().equals("King") && board[0][0].getPieceName().equals("Rook"))
+        } else return (board[0][4].getPieceName().equals("King") && board[0][0].getPieceName().equals("Rook"))
                 && board[0][4].getTeam().equals(board[0][0].getTeam()) && board[0][4].getFirstMove()
                 && board[0][0].getFirstMove() &&
                 // check if tiles are empty
                 board[0][1].getPieceName().equals("") && board[0][2].getPieceName().equals("")
-                && board[0][3].getPieceName().equals("")) {
-            return true;
-        }
-        return false;
+                && board[0][3].getPieceName().equals("");
     }
 
     private boolean checksOwnKing(String team) {
@@ -595,7 +936,7 @@ public class ChessGame {
         }
     }
 
-    private boolean checkmate(String team) {
+    public boolean checkmate(String team) {
         if ((team.equals("white") && whiteCheck == 0) || (team.equals("black") && blackCheck == 0))
             return false;
 
@@ -608,29 +949,29 @@ public class ChessGame {
                         int[] origin = {i, j};
                         int[][] moves = piece.getMoves();
                         if (piece.getPieceName().equals("Pawn")) {
-                            int pawnMoves[][] = {{-1, 0}, {-1, 1}, {-1, -1}, {-2, 0}};
-                            for (int k = 0; k < pawnMoves.length; k++) {
-                                int[] destination = {i + pawnMoves[k][0], j + pawnMoves[k][1]};
+                            int[][] pawnMoves = {{-1, 0}, {-1, 1}, {-1, -1}, {-2, 0}};
+                            for (int[] pawnMove : pawnMoves) {
+                                int[] destination = {i + pawnMove[0], j + pawnMove[1]};
                                 try {
                                     Tile target = board[destination[0]][destination[1]];
                                     if (!target.getTeam().equals("white")
-                                            && validateMove(origin, destination, "", true)) {
+                                            && validateMove(origin, destination, "", true, false) >= 0) {
                                         reverseMove(origin, destination, piece, target);
                                         piece.setFirstMove(firstMove);
                                         return false;
                                     }
-                                } catch (ArrayIndexOutOfBoundsException e) {
+                                } catch (ArrayIndexOutOfBoundsException ignored) {
                                 }
                             }
                         } else if (piece.getPieceName().equals("King")) {
-                            int kingMoves[][] = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {1, -1},
+                            int[][] kingMoves = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {1, -1},
                                     {-1, 1}, {-1, -1}, {0, -2}, {0, 2}};
                             for (int k = 0; k < kingMoves.length; k++) {
                                 int[] destination = {i + kingMoves[k][0], j + kingMoves[k][1]};
                                 try {
                                     Tile target = board[destination[0]][destination[1]];
                                     if (!target.getTeam().equals("white")
-                                            && validateMove(origin, destination, "", true)) {
+                                            && validateMove(origin, destination, "", true, false) >= 0) {
                                         if (k == 8 || k == 9) {
                                             reverseCastle(destination, "white");
                                         } else {
@@ -639,21 +980,21 @@ public class ChessGame {
                                         piece.setFirstMove(firstMove);
                                         return false;
                                     }
-                                } catch (ArrayIndexOutOfBoundsException e) {
+                                } catch (ArrayIndexOutOfBoundsException ignored) {
                                 }
                             }
                         } else {
-                            for (int k = 0; k < moves.length; k++) {
-                                int[] destination = {i + moves[k][0], j + moves[k][1]};
+                            for (int[] move : moves) {
+                                int[] destination = {i + move[0], j + move[1]};
                                 try {
                                     Tile target = board[destination[0]][destination[1]];
                                     if (!target.getTeam().equals("white")
-                                            && validateMove(origin, destination, "", true)) {
+                                            && validateMove(origin, destination, "", true, false) >= 0) {
                                         reverseMove(origin, destination, piece, target);
                                         piece.setFirstMove(firstMove);
                                         return false;
                                     }
-                                } catch (ArrayIndexOutOfBoundsException e) {
+                                } catch (ArrayIndexOutOfBoundsException ignored) {
                                 }
                             }
                         }
@@ -669,29 +1010,29 @@ public class ChessGame {
                         int[] origin = {i, j};
                         int[][] moves = piece.getMoves();
                         if (piece.getPieceName().equals("Pawn")) {
-                            int pawnMoves[][] = {{1, 0}, {1, 1}, {1, -1}, {2, 0}};
-                            for (int k = 0; k < pawnMoves.length; k++) {
-                                int[] destination = {i + pawnMoves[k][0], j + pawnMoves[k][1]};
+                            int[][] pawnMoves = {{1, 0}, {1, 1}, {1, -1}, {2, 0}};
+                            for (int[] pawnMove : pawnMoves) {
+                                int[] destination = {i + pawnMove[0], j + pawnMove[1]};
                                 try {
                                     Tile target = board[destination[0]][destination[1]];
                                     if (!target.getTeam().equals("black")
-                                            && validateMove(origin, destination, "", false)) {
+                                            && validateMove(origin, destination, "", false, false) >= 0) {
                                         reverseMove(origin, destination, piece, target);
                                         piece.setFirstMove(firstMove);
                                         return false;
                                     }
-                                } catch (ArrayIndexOutOfBoundsException e) {
+                                } catch (ArrayIndexOutOfBoundsException ignored) {
                                 }
                             }
                         } else if (piece.getPieceName().equals("King")) {
-                            int kingMoves[][] = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {1, -1},
+                            int[][] kingMoves = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {1, -1},
                                     {-1, 1}, {-1, 1}, {0, -2}, {0, 2}};
                             for (int k = 0; k < kingMoves.length; k++) {
                                 int[] destination = {i + kingMoves[k][0], j + kingMoves[k][1]};
                                 try {
                                     Tile target = board[destination[0]][destination[1]];
                                     if (!target.getTeam().equals("black")
-                                            && validateMove(origin, destination, "", false)) {
+                                            && validateMove(origin, destination, "", false, false) >= 0) {
                                         if (k == 8 || k == 9) {
                                             reverseCastle(destination, "white");
                                         } else {
@@ -700,21 +1041,21 @@ public class ChessGame {
                                         piece.setFirstMove(firstMove);
                                         return false;
                                     }
-                                } catch (ArrayIndexOutOfBoundsException e) {
+                                } catch (ArrayIndexOutOfBoundsException ignored) {
                                 }
                             }
                         } else {
-                            for (int k = 0; k < moves.length; k++) {
-                                int[] destination = {i + moves[k][0], j + moves[k][1]};
+                            for (int[] move : moves) {
+                                int[] destination = {i + move[0], j + move[1]};
                                 try {
                                     Tile target = board[destination[0]][destination[1]];
                                     if (!target.getTeam().equals("black")
-                                            && validateMove(origin, destination, "", false)) {
+                                            && validateMove(origin, destination, "", false, false) >= 0) {
                                         reverseMove(origin, destination, piece, target);
                                         piece.setFirstMove(firstMove);
                                         return false;
                                     }
-                                } catch (ArrayIndexOutOfBoundsException e) {
+                                } catch (ArrayIndexOutOfBoundsException ignored) {
                                 }
                             }
                         }
@@ -723,6 +1064,151 @@ public class ChessGame {
             }
         }
         return true;
+    }
+
+    public String randomMove() {
+        if (whitesMove) { // white king that is in check
+            for (int i = 0; i < board.length; i++) {
+                for (int j = 0; j < board[i].length; j++) {
+                    Tile piece = board[i][j];
+                    boolean firstMove = piece.getFirstMove();
+                    if (piece.getTeam().equals("white")) {
+                        int[] origin = {i, j};
+                        int[][] moves = piece.getMoves();
+                        if (piece.getPieceName().equals("Pawn")) {
+                            int[][] pawnMoves = {{-1, 0}, {-1, 1}, {-1, -1}, {-2, 0}};
+                            for (int[] pawnMove : pawnMoves) {
+                                int[] destination = {i + pawnMove[0], j + pawnMove[1]};
+                                try {
+                                    Tile target = board[destination[0]][destination[1]];
+                                    if (!target.getTeam().equals("white")
+                                            && validateMove(origin, destination, "", true, false) >= 0) {
+                                        reverseMove(origin, destination, piece, target);
+                                        piece.setFirstMove(firstMove);
+
+                                        String method = getMethod(origin, destination);
+                                        int result = play(method);
+                                        return method + " " + result;
+                                    }
+                                } catch (ArrayIndexOutOfBoundsException ignored) {
+                                }
+                            }
+                        } else if (piece.getPieceName().equals("King")) {
+                            int[][] kingMoves = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {1, -1},
+                                    {-1, 1}, {-1, -1}, {0, -2}, {0, 2}};
+                            for (int k = 0; k < kingMoves.length; k++) {
+                                int[] destination = {i + kingMoves[k][0], j + kingMoves[k][1]};
+                                try {
+                                    Tile target = board[destination[0]][destination[1]];
+                                    if (!target.getTeam().equals("white")
+                                            && validateMove(origin, destination, "", true, false) >= 0) {
+                                        if (k == 8 || k == 9) {
+                                            reverseCastle(destination, "white");
+                                        } else {
+                                            reverseMove(origin, destination, piece, target);
+                                        }
+                                        piece.setFirstMove(firstMove);
+
+                                        String method = getMethod(origin, destination);
+                                        int result = play(method);
+                                        return method + " " + result;
+                                    }
+                                } catch (ArrayIndexOutOfBoundsException ignored) {
+                                }
+                            }
+                        } else {
+                            for (int[] move : moves) {
+                                int[] destination = {i + move[0], j + move[1]};
+                                try {
+                                    Tile target = board[destination[0]][destination[1]];
+                                    if (!target.getTeam().equals("white")
+                                            && validateMove(origin, destination, "", true, false) >= 0) {
+                                        reverseMove(origin, destination, piece, target);
+                                        piece.setFirstMove(firstMove);
+
+                                        String method = getMethod(origin, destination);
+                                        int result = play(method);
+                                        return method + " " + result;
+                                    }
+                                } catch (ArrayIndexOutOfBoundsException ignored) {
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            for (int i = 0; i < board.length; i++) {
+                for (int j = 0; j < board[i].length; j++) {
+                    Tile piece = board[i][j];
+                    boolean firstMove = piece.getFirstMove();
+                    if (piece.getTeam().equals("black")) {
+                        int[] origin = {i, j};
+                        int[][] moves = piece.getMoves();
+                        if (piece.getPieceName().equals("Pawn")) {
+                            int[][] pawnMoves = {{1, 0}, {1, 1}, {1, -1}, {2, 0}};
+                            for (int[] pawnMove : pawnMoves) {
+                                int[] destination = {i + pawnMove[0], j + pawnMove[1]};
+                                try {
+                                    Tile target = board[destination[0]][destination[1]];
+                                    if (!target.getTeam().equals("black")
+                                            && validateMove(origin, destination, "", false, false) >= 0) {
+                                        reverseMove(origin, destination, piece, target);
+                                        piece.setFirstMove(firstMove);
+
+                                        String method = getMethod(origin, destination);
+                                        int result = play(method);
+                                        return method + " " + result;
+                                    }
+                                } catch (ArrayIndexOutOfBoundsException ignored) {
+                                }
+                            }
+                        } else if (piece.getPieceName().equals("King")) {
+                            int[][] kingMoves = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {1, -1},
+                                    {-1, 1}, {-1, 1}, {0, -2}, {0, 2}};
+                            for (int k = 0; k < kingMoves.length; k++) {
+                                int[] destination = {i + kingMoves[k][0], j + kingMoves[k][1]};
+                                try {
+                                    Tile target = board[destination[0]][destination[1]];
+                                    if (!target.getTeam().equals("black")
+                                            && validateMove(origin, destination, "", false, false) >= 0) {
+                                        if (k == 8 || k == 9) {
+                                            reverseCastle(destination, "white");
+                                        } else {
+                                            reverseMove(origin, destination, piece, target);
+                                        }
+                                        piece.setFirstMove(firstMove);
+
+                                        String method = getMethod(origin, destination);
+                                        int result = play(method);
+                                        return method + " " + result;
+                                    }
+                                } catch (ArrayIndexOutOfBoundsException ignored) {
+                                }
+                            }
+                        } else {
+                            for (int[] move : moves) {
+                                int[] destination = {i + move[0], j + move[1]};
+                                try {
+                                    Tile target = board[destination[0]][destination[1]];
+                                    if (!target.getTeam().equals("black")
+                                            && validateMove(origin, destination, "", false, false) >= 0) {
+                                        reverseMove(origin, destination, piece, target);
+                                        piece.setFirstMove(firstMove);
+
+                                        String method = getMethod(origin, destination);
+                                        int result = play(method);
+                                        return method + " " + result;
+                                    }
+                                } catch (ArrayIndexOutOfBoundsException ignored) {
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return "";
     }
 
     private int[] getIndex(String input) {
@@ -734,6 +1220,15 @@ public class ChessGame {
         index[1] = input.charAt(0) - '0' - 49;
 
         return index;
+    }
+
+    private String getMethod(int[] origin, int[] destination) {
+        return Character.toString((char) (origin[1] + 97)) + Integer.toString(8 - origin[0])
+                + " " + (char) (destination[1] + 97) + Integer.toString(8 - destination[0]);
+    }
+
+    public ArrayList<String> getMoveHistory() {
+        return this.moveHistory;
     }
 
     private void initBoard() {

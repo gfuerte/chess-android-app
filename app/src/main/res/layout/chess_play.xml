@@ -465,7 +465,7 @@
 
             <FrameLayout
                 android:id="@+id/a6"
-                android:tag="a7"
+                android:tag="a6"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content">
 
@@ -481,7 +481,7 @@
 
             <FrameLayout
                 android:id="@+id/b6"
-                android:tag="b7"
+                android:tag="b6"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content">
 

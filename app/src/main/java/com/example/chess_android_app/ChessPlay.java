@@ -3,6 +3,7 @@ package com.example.chess_android_app;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.ClipData;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.DragEvent;
 import android.view.Menu;
@@ -15,6 +16,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.chess_android_app.models.ChessGame;
+import com.example.chess_android_app.popups.PlayBlackPromotionPopup;
+import com.example.chess_android_app.popups.PlayGameOverPopup;
+import com.example.chess_android_app.popups.PlayWhitePromotionPopup;
+
+import java.util.ArrayList;
 
 public class ChessPlay extends AppCompatActivity {
 
@@ -39,6 +45,13 @@ public class ChessPlay extends AppCompatActivity {
 
     private ChessGame game = new ChessGame();
     private View viewHolder = null;
+    private View promotionView;
+
+    private ArrayList<View> undoPieces = new ArrayList<>();
+    private ArrayList<FrameLayout> undoLocations = new ArrayList<>();
+    private ArrayList<String> undoTags = new ArrayList<>();
+    private boolean undoPromotion = false;
+    private boolean undoPawnWhite = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,29 +68,288 @@ public class ChessPlay extends AppCompatActivity {
 
         text = findViewById(R.id.text);
 
-        undo_btn.setOnClickListener(v -> {
-            //Toast.makeText(ChessPlay.this, "Undo Button Clicked", Toast.LENGTH_SHORT).show();
+        undo_btn.setOnClickListener(button -> {
             text.setText("Undo");
+            if (undoPieces.size() > 0) {
+                game.play("undo");
+                View piece = undoPieces.get(0);
+                FrameLayout undoOrigin = undoLocations.get(0);
+                FrameLayout undoDestination = undoLocations.get(1);
+                piece.setTag(undoTags.get(0));
+                if (undoLocations.size() == 2) {
+                    undoDestination.removeViewAt(1);
+                    undoOrigin.addView(piece);
+                    if (undoPieces.size() == 2) {
+                        View target = undoPieces.get(1);
+                        undoDestination.addView(target);
+                    }
+                    if (undoPromotion) {
+                        ImageView image = (ImageView) promotionView;
+                        if (undoPawnWhite) {
+                            image.setImageResource(R.drawable.white_pawn);
+                        } else {
+                            image.setImageResource(R.drawable.black_pawn);
+                        }
+                    }
+                } else if (undoLocations.size() == 3) {
+                    View enpass = undoPieces.get(1);
+                    FrameLayout enLocation = undoLocations.get(2);
+                    undoDestination.removeViewAt(1);
+                    undoOrigin.addView(piece);
+                    enLocation.addView(enpass);
+                } else if (undoLocations.size() == 4) {
+                    View rook = undoPieces.get(1);
+                    FrameLayout rookLocation = undoLocations.get(2);
+                    FrameLayout emptyLocation = undoLocations.get(3);
+
+                    undoDestination.removeViewAt(1);
+                    undoOrigin.addView(piece);
+                    emptyLocation.removeViewAt(1);
+                    rookLocation.addView(rook);
+                    rook.setTag(undoTags.get(1));
+                }
+                undoPieces.clear();
+                undoLocations.clear();
+                undoTags.clear();
+                undoPromotion = false;
+            }
         });
 
-        ai_btn.setOnClickListener(v -> {
+        ai_btn.setOnClickListener(button -> {
             //Toast.makeText(ChessPlay.this, "AI Button Clicked", Toast.LENGTH_SHORT).show();
             text.setText("AI");
+            String move = game.randomMove();
+            if (move.length() == 0) {
+                Toast.makeText(ChessPlay.this, "Error", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            String origin = move.substring(0, 2);
+            String destination = move.substring(3, 5);
+            int result = Integer.parseInt(move.substring(6));
+
+            FrameLayout currentFrame = getFrame(origin);
+            FrameLayout newFrame = getFrame(destination);
+
+            if (result >= 0) {
+                View v = currentFrame.getChildAt(1);
+
+                undoLocations.clear();
+                undoPieces.clear();
+                undoTags.clear();
+                undoPromotion = false;
+
+                text.setText("AI: " + origin + " " + destination);
+
+                currentFrame.removeView(v);
+
+                v.setTag(destination);
+                if (newFrame.getChildCount() == 1) {
+                    newFrame.addView(v);
+
+                    undoPieces.add(v);
+                    undoLocations.add(currentFrame);
+                    undoLocations.add(newFrame);
+                    undoTags.add(origin);
+                } else if (newFrame.getChildCount() == 2) {
+                    View target = newFrame.getChildAt(1);
+                    newFrame.removeView(target);
+                    newFrame.addView(v);
+
+                    undoPieces.add(v);
+                    undoPieces.add(target);
+                    undoLocations.add(currentFrame);
+                    undoLocations.add(newFrame);
+                    undoTags.add(origin);
+                }
+
+                View rook;
+                View enpass;
+                ImageView image;
+                switch (result) {
+                    case 1:
+                        switch (v.getTag().toString().charAt(0)) {
+                            case 'a':
+                                enpass = a4.getChildAt(1);
+                                a4.removeView(enpass);
+                                undoLocations.add(a4);
+                                break;
+                            case 'b':
+                                enpass = b4.getChildAt(1);
+                                b4.removeViewAt(1);
+                                undoLocations.add(b4);
+                                break;
+                            case 'c':
+                                enpass = c4.getChildAt(1);
+                                c4.removeViewAt(1);
+                                undoLocations.add(c4);
+                                break;
+                            case 'd':
+                                enpass = d4.getChildAt(1);
+                                d4.removeViewAt(1);
+                                undoLocations.add(d4);
+                                break;
+                            case 'e':
+                                enpass = e4.getChildAt(1);
+                                e4.removeViewAt(1);
+                                undoLocations.add(e4);
+                                break;
+                            case 'f':
+                                enpass = f4.getChildAt(1);
+                                f4.removeViewAt(1);
+                                undoLocations.add(f4);
+                                break;
+                            case 'g':
+                                enpass = g4.getChildAt(1);
+                                g4.removeViewAt(1);
+                                undoLocations.add(g4);
+                                break;
+                            case 'h':
+                                enpass = h4.getChildAt(1);
+                                h4.removeViewAt(1);
+                                undoLocations.add(h4);
+                                break;
+                            default:
+                                enpass = null;
+                        }
+                        undoPieces.add(enpass);
+                        break;
+                    case 2:
+                        switch (v.getTag().toString().charAt(0)) {
+                            case 'a':
+                                enpass = a5.getChildAt(1);
+                                a5.removeViewAt(1);
+                                undoLocations.add(a5);
+                                break;
+                            case 'b':
+                                enpass = b5.getChildAt(1);
+                                b5.removeViewAt(1);
+                                undoLocations.add(b5);
+                                break;
+                            case 'c':
+                                enpass = c5.getChildAt(1);
+                                c5.removeViewAt(1);
+                                undoLocations.add(c5);
+                                break;
+                            case 'd':
+                                enpass = d5.getChildAt(1);
+                                d5.removeViewAt(1);
+                                undoLocations.add(d5);
+                                break;
+                            case 'e':
+                                enpass = e5.getChildAt(1);
+                                e5.removeViewAt(1);
+                                undoLocations.add(e5);
+                                break;
+                            case 'f':
+                                enpass = f5.getChildAt(1);
+                                f5.removeViewAt(1);
+                                undoLocations.add(f5);
+                                break;
+                            case 'g':
+                                enpass = g5.getChildAt(1);
+                                g5.removeViewAt(1);
+                                undoLocations.add(g5);
+                                break;
+                            case 'h':
+                                enpass = h5.getChildAt(1);
+                                h5.removeViewAt(1);
+                                undoLocations.add(h5);
+                                break;
+                            default:
+                                enpass = null;
+                        }
+                        undoPieces.add(enpass);
+                        break;
+                    case 3:
+                        image = (ImageView) v;
+                        image.setImageResource(R.drawable.white_queen);
+                        result = game.play("wQ");
+
+                        promotionView = v;
+                        undoPawnWhite = true;
+                        undoPromotion = true;
+                        break;
+                    case 4:
+                        image = (ImageView) v;
+                        image.setImageResource(R.drawable.white_queen);
+                        result = game.play("bQ");
+
+                        promotionView = v;
+                        undoPawnWhite = true;
+                        undoPromotion = true;
+                        break;
+                    case 5:
+                        rook = h1.getChildAt(1);
+                        h1.removeView(rook);
+                        f1.addView(rook);
+                        undoPieces.add(rook);
+                        undoLocations.add(h1);
+                        undoLocations.add(f1);
+                        undoTags.add("h1");
+                        rook.setTag("f1");
+                        break;
+                    case 6:
+                        rook = a1.getChildAt(1);
+                        a1.removeView(rook);
+                        d1.addView(rook);
+                        undoPieces.add(rook);
+                        undoLocations.add(a1);
+                        undoLocations.add(d1);
+                        undoTags.add("a1");
+                        rook.setTag("d1");
+                        break;
+                    case 7:
+                        rook = h8.getChildAt(1);
+                        h8.removeView(rook);
+                        f8.addView(rook);
+                        undoPieces.add(rook);
+                        undoLocations.add(h8);
+                        undoLocations.add(f8);
+                        undoTags.add("h8");
+                        rook.setTag("f8");
+                        break;
+                    case 8:
+                        rook = a8.getChildAt(1);
+                        a8.removeView(rook);
+                        d8.addView(rook);
+                        undoPieces.add(rook);
+                        undoLocations.add(a8);
+                        undoLocations.add(d8);
+                        undoTags.add("a8");
+                        rook.setTag("d8");
+                        break;
+                }
+
+                if (result == 9 || result == 10) {
+                    Toast.makeText(ChessPlay.this, "Check", Toast.LENGTH_SHORT).show();
+                } else if (result == 11 || result == 12) {
+                    Toast.makeText(ChessPlay.this, "Checkmate", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                Toast.makeText(ChessPlay.this, "Error", Toast.LENGTH_SHORT).show();
+            }
         });
 
-        draw_btn.setOnClickListener(v -> {
+        draw_btn.setOnClickListener(button -> {
             //.makeText(ChessPlay.this, "Draw Button Clicked", Toast.LENGTH_SHORT).show();
             text.setText("Draw");
+            Intent intent = new Intent(ChessPlay.this, PlayGameOverPopup.class);
+            intent.putExtra("cause","by Draw");
+            startActivityForResult(intent, 2);
         });
 
-        resign_btn.setOnClickListener(v -> {
+        resign_btn.setOnClickListener(button -> {
             //Toast.makeText(ChessPlay.this, "Resign Button Clicked", Toast.LENGTH_SHORT).show();
             text.setText("Resign");
+            Intent intent = new Intent(ChessPlay.this, PlayGameOverPopup.class);
+            intent.putExtra("cause","by Resignation");
+            startActivityForResult(intent, 2);
         });
     }
 
     View.OnClickListener pieceClickListener = view -> {
-        if(viewHolder == null) {
+        if (viewHolder == null) {
             viewHolder = view;
         } else {
             View v = viewHolder;
@@ -85,20 +357,46 @@ public class ChessPlay extends AppCompatActivity {
             String destination = view.getTag().toString();
             int result = game.play(origin + " " + destination);
 
-            if(result >= 0) {
-                //Toast.makeText(ChessPlay.this, origin + " " + destination, Toast.LENGTH_SHORT).show();
+            if (result >= 0) {
+                undoLocations.clear();
+                undoPieces.clear();
+                undoTags.clear();
+                undoPromotion = false;
+
+                text.setText(origin + " " + destination);
 
                 FrameLayout currentFrame = (FrameLayout) v.getParent();
                 currentFrame.removeView(v);
 
                 FrameLayout newFrame = (FrameLayout) view.getParent();
-                newFrame.removeViewAt(1);
+                View target = newFrame.getChildAt(1);
+                newFrame.removeView(target);
                 newFrame.addView(v);
-
                 v.setTag(destination);
 
-                if(result == 1 || result == 2) {
+                undoPieces.add(v);
+                undoPieces.add(target);
+                undoLocations.add(currentFrame);
+                undoLocations.add(newFrame);
+                undoTags.add(origin);
+
+                switch (result) {
+                    case 3:
+                        startActivityForResult(new Intent(ChessPlay.this, PlayWhitePromotionPopup.class), 1);
+                        promotionView = v;
+                        undoPromotion = true;
+                        break;
+                    case 4:
+                        startActivityForResult(new Intent(ChessPlay.this, PlayBlackPromotionPopup.class), 1);
+                        promotionView = v;
+                        undoPromotion = true;
+                        break;
+                }
+
+                if (result == 9 || result == 10) {
                     Toast.makeText(ChessPlay.this, "Check", Toast.LENGTH_SHORT).show();
+                } else if (result == 11 || result == 12) {
+                    Toast.makeText(ChessPlay.this, "Checkmate", Toast.LENGTH_SHORT).show();
                 }
             }
             viewHolder = null;
@@ -106,25 +404,185 @@ public class ChessPlay extends AppCompatActivity {
     };
 
     View.OnClickListener tileClickListener = view -> {
-        if(viewHolder != null) {
+        if (viewHolder != null) {
             View v = viewHolder;
             String origin = v.getTag().toString();
             String destination = view.getTag().toString();
-            int result = game.play(origin + " " + destination);
 
-            if(result >= 0) {
-                //Toast.makeText(ChessPlay.this, origin + " " + destination, Toast.LENGTH_SHORT).show();
+            int result = game.play(origin + " " + destination);
+            if (result >= 0) {
+                undoLocations.clear();
+                undoPieces.clear();
+                undoTags.clear();
+                undoPromotion = false;
+
+                text.setText(origin + " " + destination);
 
                 FrameLayout currentFrame = (FrameLayout) v.getParent();
                 currentFrame.removeView(v);
 
                 FrameLayout newFrame = (FrameLayout) view;
                 newFrame.addView(v);
-
                 v.setTag(destination);
 
-                if(result == 1 || result == 2) {
+                undoPieces.add(v);
+                undoLocations.add(currentFrame);
+                undoLocations.add(newFrame);
+                undoTags.add(origin);
+
+                View rook;
+                View enpass;
+                switch (result) {
+                    case 1:
+                        switch (v.getTag().toString().charAt(0)) {
+                            case 'a':
+                                enpass = a4.getChildAt(1);
+                                a4.removeView(enpass);
+                                undoLocations.add(a4);
+                                break;
+                            case 'b':
+                                enpass = b4.getChildAt(1);
+                                b4.removeViewAt(1);
+                                undoLocations.add(b4);
+                                break;
+                            case 'c':
+                                enpass = c4.getChildAt(1);
+                                c4.removeViewAt(1);
+                                undoLocations.add(c4);
+                                break;
+                            case 'd':
+                                enpass = d4.getChildAt(1);
+                                d4.removeViewAt(1);
+                                undoLocations.add(d4);
+                                break;
+                            case 'e':
+                                enpass = e4.getChildAt(1);
+                                e4.removeViewAt(1);
+                                undoLocations.add(e4);
+                                break;
+                            case 'f':
+                                enpass = f4.getChildAt(1);
+                                f4.removeViewAt(1);
+                                undoLocations.add(f4);
+                                break;
+                            case 'g':
+                                enpass = g4.getChildAt(1);
+                                g4.removeViewAt(1);
+                                undoLocations.add(g4);
+                                break;
+                            case 'h':
+                                enpass = h4.getChildAt(1);
+                                h4.removeViewAt(1);
+                                undoLocations.add(h4);
+                                break;
+                            default:
+                                enpass = null;
+                        }
+                        undoPieces.add(enpass);
+                        break;
+                    case 2:
+                        switch (v.getTag().toString().charAt(0)) {
+                            case 'a':
+                                enpass = a5.getChildAt(1);
+                                a5.removeViewAt(1);
+                                undoLocations.add(a5);
+                                break;
+                            case 'b':
+                                enpass = b5.getChildAt(1);
+                                b5.removeViewAt(1);
+                                undoLocations.add(b5);
+                                break;
+                            case 'c':
+                                enpass = c5.getChildAt(1);
+                                c5.removeViewAt(1);
+                                undoLocations.add(c5);
+                                break;
+                            case 'd':
+                                enpass = d5.getChildAt(1);
+                                d5.removeViewAt(1);
+                                undoLocations.add(d5);
+                                break;
+                            case 'e':
+                                enpass = e5.getChildAt(1);
+                                e5.removeViewAt(1);
+                                undoLocations.add(e5);
+                                break;
+                            case 'f':
+                                enpass = f5.getChildAt(1);
+                                f5.removeViewAt(1);
+                                undoLocations.add(f5);
+                                break;
+                            case 'g':
+                                enpass = g5.getChildAt(1);
+                                g5.removeViewAt(1);
+                                undoLocations.add(g5);
+                                break;
+                            case 'h':
+                                enpass = h5.getChildAt(1);
+                                h5.removeViewAt(1);
+                                undoLocations.add(h5);
+                                break;
+                            default:
+                                enpass = null;
+                        }
+                        undoPieces.add(enpass);
+                        break;
+                    case 3:
+                        startActivityForResult(new Intent(ChessPlay.this, PlayWhitePromotionPopup.class), 1);
+                        promotionView = v;
+                        undoPromotion = true;
+                        break;
+                    case 4:
+                        startActivityForResult(new Intent(ChessPlay.this, PlayBlackPromotionPopup.class), 1);
+                        promotionView = v;
+                        undoPromotion = true;
+                        break;
+                    case 5:
+                        rook = h1.getChildAt(1);
+                        h1.removeView(rook);
+                        f1.addView(rook);
+                        undoPieces.add(rook);
+                        undoLocations.add(h1);
+                        undoLocations.add(f1);
+                        undoTags.add("h1");
+                        rook.setTag("f1");
+                        break;
+                    case 6:
+                        rook = a1.getChildAt(1);
+                        a1.removeView(rook);
+                        d1.addView(rook);
+                        undoPieces.add(rook);
+                        undoLocations.add(a1);
+                        undoLocations.add(d1);
+                        undoTags.add("a1");
+                        rook.setTag("d1");
+                        break;
+                    case 7:
+                        rook = h8.getChildAt(1);
+                        h8.removeView(rook);
+                        f8.addView(rook);
+                        undoPieces.add(rook);
+                        undoLocations.add(h8);
+                        undoLocations.add(f8);
+                        undoTags.add("h8");
+                        rook.setTag("f8");
+                        break;
+                    case 8:
+                        rook = a8.getChildAt(1);
+                        a8.removeView(rook);
+                        d8.addView(rook);
+                        undoPieces.add(rook);
+                        undoLocations.add(a8);
+                        undoLocations.add(d8);
+                        undoTags.add("a8");
+                        rook.setTag("d8");
+                        break;
+                }
+
+                if (result == 9 || result == 10) {
                     Toast.makeText(ChessPlay.this, "Check", Toast.LENGTH_SHORT).show();
+                } else if (result == 11 || result == 12) {
+                    Toast.makeText(ChessPlay.this, "Checkmate", Toast.LENGTH_SHORT).show();
                 }
             }
             viewHolder = null;
@@ -132,45 +590,213 @@ public class ChessPlay extends AppCompatActivity {
     };
 
     View.OnLongClickListener longClickListener = view -> {
-        ClipData data = ClipData.newPlainText("","");
+        ClipData data = ClipData.newPlainText("", "");
         View.DragShadowBuilder myShadowBuilder = new View.DragShadowBuilder(view);
-        view.startDragAndDrop(data,myShadowBuilder, view, 0);
+        view.startDragAndDrop(data, myShadowBuilder, view, 0);
         return false;
     };
 
-    View.OnDragListener dragListener = (target, event) -> {
+    View.OnDragListener dragListener = (view, event) -> {
         int dragEvent = event.getAction();
-        final View view = (View) event.getLocalState();
+        final View v = (View) event.getLocalState();
 
         switch (dragEvent) {
             case DragEvent.ACTION_DRAG_ENTERED:
             case DragEvent.ACTION_DRAG_EXITED:
                 break;
             case DragEvent.ACTION_DROP:
-                String origin = view.getTag().toString();
-                String destination = target.getTag().toString();
+                String origin = v.getTag().toString();
+                String destination = view.getTag().toString();
                 int result = game.play(origin + " " + destination);
 
-                if(result >= 0) {
-                    //Toast.makeText(ChessPlay.this, origin + " " + destination, Toast.LENGTH_SHORT).show();
+                if (result >= 0) {
+                    undoLocations.clear();
+                    undoPieces.clear();
+                    undoTags.clear();
+                    undoPromotion = false;
 
-                    FrameLayout currentFrame = (FrameLayout) view.getParent();
-                    currentFrame.removeView(view);
+                    text.setText(origin + " " + destination);
 
-                    FrameLayout newFrame = (FrameLayout) target;
+                    FrameLayout currentFrame = (FrameLayout) v.getParent();
+                    currentFrame.removeView(v);
+
+                    FrameLayout newFrame = (FrameLayout) view;
+
+                    v.setTag(destination);
                     if (newFrame.getChildCount() == 1) {
-                        newFrame.addView(view);
-                    } else if (newFrame.getChildCount() == 2) {
-                        newFrame.removeViewAt(1);
-                        newFrame.addView(view);
-                    }
-                    view.setTag(destination);
+                        newFrame.addView(v);
 
-                    if(result == 1 || result == 2) {
+                        undoPieces.add(v);
+                        undoLocations.add(currentFrame);
+                        undoLocations.add(newFrame);
+                        undoTags.add(origin);
+                    } else if (newFrame.getChildCount() == 2) {
+                        View target = newFrame.getChildAt(1);
+                        newFrame.removeView(target);
+                        newFrame.addView(v);
+
+                        undoPieces.add(v);
+                        undoPieces.add(target);
+                        undoLocations.add(currentFrame);
+                        undoLocations.add(newFrame);
+                        undoTags.add(origin);
+                    }
+
+                    View rook;
+                    View enpass;
+                    switch (result) {
+                        case 1:
+                            switch (v.getTag().toString().charAt(0)) {
+                                case 'a':
+                                    enpass = a4.getChildAt(1);
+                                    a4.removeView(enpass);
+                                    undoLocations.add(a4);
+                                    break;
+                                case 'b':
+                                    enpass = b4.getChildAt(1);
+                                    b4.removeViewAt(1);
+                                    undoLocations.add(b4);
+                                    break;
+                                case 'c':
+                                    enpass = c4.getChildAt(1);
+                                    c4.removeViewAt(1);
+                                    undoLocations.add(c4);
+                                    break;
+                                case 'd':
+                                    enpass = d4.getChildAt(1);
+                                    d4.removeViewAt(1);
+                                    undoLocations.add(d4);
+                                    break;
+                                case 'e':
+                                    enpass = e4.getChildAt(1);
+                                    e4.removeViewAt(1);
+                                    undoLocations.add(e4);
+                                    break;
+                                case 'f':
+                                    enpass = f4.getChildAt(1);
+                                    f4.removeViewAt(1);
+                                    undoLocations.add(f4);
+                                    break;
+                                case 'g':
+                                    enpass = g4.getChildAt(1);
+                                    g4.removeViewAt(1);
+                                    undoLocations.add(g4);
+                                    break;
+                                case 'h':
+                                    enpass = h4.getChildAt(1);
+                                    h4.removeViewAt(1);
+                                    undoLocations.add(h4);
+                                    break;
+                                default:
+                                    enpass = null;
+                            }
+                            undoPieces.add(enpass);
+                            break;
+                        case 2:
+                            switch (v.getTag().toString().charAt(0)) {
+                                case 'a':
+                                    enpass = a5.getChildAt(1);
+                                    a5.removeViewAt(1);
+                                    undoLocations.add(a5);
+                                    break;
+                                case 'b':
+                                    enpass = b5.getChildAt(1);
+                                    b5.removeViewAt(1);
+                                    undoLocations.add(b5);
+                                    break;
+                                case 'c':
+                                    enpass = c5.getChildAt(1);
+                                    c5.removeViewAt(1);
+                                    undoLocations.add(c5);
+                                    break;
+                                case 'd':
+                                    enpass = d5.getChildAt(1);
+                                    d5.removeViewAt(1);
+                                    undoLocations.add(d5);
+                                    break;
+                                case 'e':
+                                    enpass = e5.getChildAt(1);
+                                    e5.removeViewAt(1);
+                                    undoLocations.add(e5);
+                                    break;
+                                case 'f':
+                                    enpass = f5.getChildAt(1);
+                                    f5.removeViewAt(1);
+                                    undoLocations.add(f5);
+                                    break;
+                                case 'g':
+                                    enpass = g5.getChildAt(1);
+                                    g5.removeViewAt(1);
+                                    undoLocations.add(g5);
+                                    break;
+                                case 'h':
+                                    enpass = h5.getChildAt(1);
+                                    h5.removeViewAt(1);
+                                    undoLocations.add(h5);
+                                    break;
+                                default:
+                                    enpass = null;
+                            }
+                            undoPieces.add(enpass);
+                            break;
+                        case 3:
+                            startActivityForResult(new Intent(ChessPlay.this, PlayWhitePromotionPopup.class), 1);
+                            promotionView = v;
+                            undoPromotion = true;
+                            break;
+                        case 4:
+                            startActivityForResult(new Intent(ChessPlay.this, PlayBlackPromotionPopup.class), 1);
+                            promotionView = v;
+                            undoPromotion = true;
+                            break;
+                        case 5:
+                            rook = h1.getChildAt(1);
+                            h1.removeView(rook);
+                            f1.addView(rook);
+                            undoPieces.add(rook);
+                            undoLocations.add(h1);
+                            undoLocations.add(f1);
+                            undoTags.add("h1");
+                            rook.setTag("f1");
+                            break;
+                        case 6:
+                            rook = a1.getChildAt(1);
+                            a1.removeView(rook);
+                            d1.addView(rook);
+                            undoPieces.add(rook);
+                            undoLocations.add(a1);
+                            undoLocations.add(d1);
+                            undoTags.add("a1");
+                            rook.setTag("d1");
+                            break;
+                        case 7:
+                            rook = h8.getChildAt(1);
+                            h8.removeView(rook);
+                            f8.addView(rook);
+                            undoPieces.add(rook);
+                            undoLocations.add(h8);
+                            undoLocations.add(f8);
+                            undoTags.add("h8");
+                            rook.setTag("f8");
+                            break;
+                        case 8:
+                            rook = a8.getChildAt(1);
+                            a8.removeView(rook);
+                            d8.addView(rook);
+                            undoPieces.add(rook);
+                            undoLocations.add(a8);
+                            undoLocations.add(d8);
+                            undoTags.add("a8");
+                            rook.setTag("d8");
+                            break;
+                    }
+
+                    if (result == 9 || result == 10) {
                         Toast.makeText(ChessPlay.this, "Check", Toast.LENGTH_SHORT).show();
+                    } else if (result == 11 || result == 12) {
+                        Toast.makeText(ChessPlay.this, "Checkmate", Toast.LENGTH_SHORT).show();
                     }
                 }
-
                 break;
         }
         return true;
@@ -187,6 +813,71 @@ public class ChessPlay extends AppCompatActivity {
 
     public boolean onCreateOptionsMenu(Menu menu) {
         return true;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 1) {
+            ImageView piece = (ImageView) promotionView;
+            int result = -1;
+            switch (data.getStringExtra("promotion")) {
+                case "wQ":
+                    piece.setImageResource(R.drawable.white_queen);
+                    result = game.play("wQ");
+                    undoPawnWhite = true;
+                    break;
+                case "wR":
+                    piece.setImageResource(R.drawable.white_rook);
+                    result = game.play("wR");
+                    undoPawnWhite = true;
+                    break;
+                case "wB":
+                    piece.setImageResource(R.drawable.white_bishop);
+                    result = game.play("wB");
+                    undoPawnWhite = true;
+                    break;
+                case "wN":
+                    piece.setImageResource(R.drawable.white_knight);
+                    result = game.play("wN");
+                    undoPawnWhite = true;
+                    break;
+                case "bQ":
+                    piece.setImageResource(R.drawable.black_queen);
+                    result = game.play("bQ");
+                    undoPawnWhite = false;
+                    break;
+                case "bR":
+                    piece.setImageResource(R.drawable.black_rook);
+                    result = game.play("bR");
+                    undoPawnWhite = false;
+                    break;
+                case "bB":
+                    piece.setImageResource(R.drawable.black_bishop);
+                    result = game.play("bB");
+                    undoPawnWhite = false;
+                    break;
+                case "bN":
+                    piece.setImageResource(R.drawable.black_knight);
+                    result = game.play("bN");
+                    undoPawnWhite = false;
+                    break;
+            }
+
+            if (result == 9 || result == 10) {
+                Toast.makeText(ChessPlay.this, "Check", Toast.LENGTH_SHORT).show();
+            } else if (result == 11 || result == 12) {
+                Toast.makeText(ChessPlay.this, "Checkmate", Toast.LENGTH_SHORT).show();
+            }
+        } else if (requestCode == 2) {
+            if (data.getStringExtra("result").equals("save")) {
+                ArrayList<String> moveHistory = game.getMoveHistory();
+                Toast.makeText(ChessPlay.this, "title: " + data.getStringExtra("title"), Toast.LENGTH_SHORT).show();
+                finish();
+            } else if (data.getStringExtra("result").equals("exit")) {
+                finish();
+            }
+        }
     }
 
     private void init() {
@@ -486,5 +1177,140 @@ public class ChessPlay extends AppCompatActivity {
         h3.setOnClickListener(tileClickListener);
         h2.setOnClickListener(tileClickListener);
         h1.setOnClickListener(tileClickListener);
+    }
+
+    private FrameLayout getFrame(String input) {
+        switch (input) {
+            case "a1":
+                return a1;
+            case "a2":
+                return a2;
+            case "a3":
+                return a3;
+            case "a4":
+                return a4;
+            case "a5":
+                return a5;
+            case "a6":
+                return a6;
+            case "a7":
+                return a7;
+            case "a8":
+                return a8;
+            case "b1":
+                return b1;
+            case "b2":
+                return b2;
+            case "b3":
+                return b3;
+            case "b4":
+                return b4;
+            case "b5":
+                return b5;
+            case "b6":
+                return b6;
+            case "b7":
+                return b7;
+            case "b8":
+                return b8;
+            case "c1":
+                return c1;
+            case "c2":
+                return c2;
+            case "c3":
+                return c3;
+            case "c4":
+                return c4;
+            case "c5":
+                return c5;
+            case "c6":
+                return c6;
+            case "c7":
+                return c7;
+            case "c8":
+                return c8;
+            case "d1":
+                return d1;
+            case "d2":
+                return d2;
+            case "d3":
+                return d3;
+            case "d4":
+                return d4;
+            case "d5":
+                return d5;
+            case "d6":
+                return d6;
+            case "d7":
+                return d7;
+            case "d8":
+                return d8;
+            case "e1":
+                return e1;
+            case "e2":
+                return e2;
+            case "e3":
+                return e3;
+            case "e4":
+                return e4;
+            case "e5":
+                return e5;
+            case "e6":
+                return e6;
+            case "e7":
+                return e7;
+            case "e8":
+                return e8;
+            case "f1":
+                return f1;
+            case "f2":
+                return f2;
+            case "f3":
+                return f3;
+            case "f4":
+                return f4;
+            case "f5":
+                return f5;
+            case "f6":
+                return f6;
+            case "f7":
+                return f7;
+            case "f8":
+                return f8;
+            case "g1":
+                return g1;
+            case "g2":
+                return g2;
+            case "g3":
+                return g3;
+            case "g4":
+                return g4;
+            case "g5":
+                return g5;
+            case "g6":
+                return g6;
+            case "g7":
+                return g7;
+            case "g8":
+                return g8;
+            case "h1":
+                return h1;
+            case "h2":
+                return h2;
+            case "h3":
+                return h3;
+            case "h4":
+                return h4;
+            case "h5":
+                return h5;
+            case "h6":
+                return h6;
+            case "h7":
+                return h7;
+            case "h8":
+                return h8;
+            default:
+                return null;
+        }
     }
 }
