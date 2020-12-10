@@ -19,6 +19,7 @@
         <activity android:name=".popups.PlayBlackPromotionPopup"/>
         <activity android:name=".popups.PlayGameOverPopup"/>
         <activity android:name=".popups.GameOverTitlePopup"/>
+        <activity android:name=".ReplayGames"/>
         <activity android:name=".ChessMain">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

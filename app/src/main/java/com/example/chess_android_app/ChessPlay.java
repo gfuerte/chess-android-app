@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.ClipData;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.DragEvent;
 import android.view.Menu;
@@ -13,16 +14,20 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.chess_android_app.models.ChessGame;
 import com.example.chess_android_app.popups.PlayBlackPromotionPopup;
 import com.example.chess_android_app.popups.PlayGameOverPopup;
 import com.example.chess_android_app.popups.PlayWhitePromotionPopup;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class ChessPlay extends AppCompatActivity {
+    private static final String PREFS_NAME = "PrefsFile";
 
     private ImageView
             bR_left, bN_left, bB_left, bQ, bK, bB_right, bN_right, bR_right,
@@ -116,13 +121,8 @@ public class ChessPlay extends AppCompatActivity {
         });
 
         ai_btn.setOnClickListener(button -> {
-            //Toast.makeText(ChessPlay.this, "AI Button Clicked", Toast.LENGTH_SHORT).show();
             text.setText("AI");
             String move = game.randomMove();
-            if (move.length() == 0) {
-                Toast.makeText(ChessPlay.this, "Error", Toast.LENGTH_SHORT).show();
-                return;
-            }
 
             String origin = move.substring(0, 2);
             String destination = move.substring(3, 5);
@@ -322,17 +322,16 @@ public class ChessPlay extends AppCompatActivity {
                 }
 
                 if (result == 9 || result == 10) {
-                    Toast.makeText(ChessPlay.this, "Check", Toast.LENGTH_SHORT).show();
+                    text.setText(text.getText() + " Check");
                 } else if (result == 11 || result == 12) {
-                    Toast.makeText(ChessPlay.this, "Checkmate", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(ChessPlay.this, PlayGameOverPopup.class);
+                    intent.putExtra("cause","by Checkmate");
+                    startActivityForResult(intent, 2);
                 }
-            } else {
-                Toast.makeText(ChessPlay.this, "Error", Toast.LENGTH_SHORT).show();
             }
         });
 
         draw_btn.setOnClickListener(button -> {
-            //.makeText(ChessPlay.this, "Draw Button Clicked", Toast.LENGTH_SHORT).show();
             text.setText("Draw");
             Intent intent = new Intent(ChessPlay.this, PlayGameOverPopup.class);
             intent.putExtra("cause","by Draw");
@@ -340,7 +339,6 @@ public class ChessPlay extends AppCompatActivity {
         });
 
         resign_btn.setOnClickListener(button -> {
-            //Toast.makeText(ChessPlay.this, "Resign Button Clicked", Toast.LENGTH_SHORT).show();
             text.setText("Resign");
             Intent intent = new Intent(ChessPlay.this, PlayGameOverPopup.class);
             intent.putExtra("cause","by Resignation");
@@ -349,9 +347,7 @@ public class ChessPlay extends AppCompatActivity {
     }
 
     View.OnClickListener pieceClickListener = view -> {
-        if (viewHolder == null) {
-            viewHolder = view;
-        } else {
+        if (viewHolder != null) {
             View v = viewHolder;
             String origin = v.getTag().toString();
             String destination = view.getTag().toString();
@@ -394,13 +390,15 @@ public class ChessPlay extends AppCompatActivity {
                 }
 
                 if (result == 9 || result == 10) {
-                    Toast.makeText(ChessPlay.this, "Check", Toast.LENGTH_SHORT).show();
+                    text.setText(text.getText() + " Check");
                 } else if (result == 11 || result == 12) {
-                    Toast.makeText(ChessPlay.this, "Checkmate", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(ChessPlay.this, PlayGameOverPopup.class);
+                    intent.putExtra("cause", "by Checkmate");
+                    startActivityForResult(intent, 2);
                 }
             }
-            viewHolder = null;
         }
+        viewHolder = view;
     };
 
     View.OnClickListener tileClickListener = view -> {
@@ -580,9 +578,11 @@ public class ChessPlay extends AppCompatActivity {
                 }
 
                 if (result == 9 || result == 10) {
-                    Toast.makeText(ChessPlay.this, "Check", Toast.LENGTH_SHORT).show();
+                    text.setText(text.getText() + " Check");
                 } else if (result == 11 || result == 12) {
-                    Toast.makeText(ChessPlay.this, "Checkmate", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(ChessPlay.this, PlayGameOverPopup.class);
+                    intent.putExtra("cause","by Checkmate");
+                    startActivityForResult(intent, 2);
                 }
             }
             viewHolder = null;
@@ -792,9 +792,11 @@ public class ChessPlay extends AppCompatActivity {
                     }
 
                     if (result == 9 || result == 10) {
-                        Toast.makeText(ChessPlay.this, "Check", Toast.LENGTH_SHORT).show();
+                        text.setText(text.getText() + " Check");
                     } else if (result == 11 || result == 12) {
-                        Toast.makeText(ChessPlay.this, "Checkmate", Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(ChessPlay.this, PlayGameOverPopup.class);
+                        intent.putExtra("cause","by Checkmate");
+                        startActivityForResult(intent, 2);
                     }
                 }
                 break;
@@ -865,14 +867,26 @@ public class ChessPlay extends AppCompatActivity {
             }
 
             if (result == 9 || result == 10) {
-                Toast.makeText(ChessPlay.this, "Check", Toast.LENGTH_SHORT).show();
+                text.setText(text.getText() + " Check");
             } else if (result == 11 || result == 12) {
-                Toast.makeText(ChessPlay.this, "Checkmate", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(ChessPlay.this, PlayGameOverPopup.class);
+                intent.putExtra("cause","by Checkmate");
+                startActivityForResult(intent, 2);
             }
         } else if (requestCode == 2) {
             if (data.getStringExtra("result").equals("save")) {
-                ArrayList<String> moveHistory = game.getMoveHistory();
-                Toast.makeText(ChessPlay.this, "title: " + data.getStringExtra("title"), Toast.LENGTH_SHORT).show();
+                String moveHistory = game.getMoveHistory().stream().collect(Collectors.joining(","));
+                String title = data.getStringExtra("title");
+                String date = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+
+                SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+                SharedPreferences.Editor editor = settings.edit();
+                Set<String> set = settings.getStringSet("set", null);
+                set.add(title + "\t\t\t" + date);
+                editor.putStringSet("set", set);
+                editor.putString(title, moveHistory);
+                editor.apply();
+
                 finish();
             } else if (data.getStringExtra("result").equals("exit")) {
                 finish();

@@ -11,4 +11,7 @@
     <string name="save_game">Save Game</string>
     <string name="exit">Exit</string>
     <string name="enter_title">Enter Game Title</string>
+    <string name="title_sort">Sort By Title</string>
+    <string name="date_sort">Sort By Date</string>
+    <string name="next_move">Next Move</string>
 </resources>

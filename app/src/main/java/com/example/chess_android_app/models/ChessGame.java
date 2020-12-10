@@ -1,7 +1,5 @@
 package com.example.chess_android_app.models;
 
-import android.util.Pair;
-
 import java.util.ArrayList;
 
 public class ChessGame {
@@ -90,7 +88,7 @@ public class ChessGame {
             piece.setFirstMove(false);
             board[promotionLocation[0]][promotionLocation[1]] = piece;
 
-            String history = moveHistory.get(moveHistory.size()-1) + " " + input.charAt(1);
+            String history = moveHistory.get(moveHistory.size()-1) + " " + input;
             moveHistory.remove(moveHistory.size()-1);
             moveHistory.add(history);
 

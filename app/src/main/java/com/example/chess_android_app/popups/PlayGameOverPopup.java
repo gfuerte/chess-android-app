@@ -5,16 +5,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
-import com.example.chess_android_app.ChessPlay;
 import com.example.chess_android_app.R;
 
-import java.util.ArrayList;
 
 public class PlayGameOverPopup extends Activity {
 
